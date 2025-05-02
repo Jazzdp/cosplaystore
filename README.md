@@ -18,6 +18,7 @@ Cette application e-commerce a été développée dans le cadre du cours de Dév
 - Barre de recherche pour filtrer les produits
 - Design responsive pour mobile et desktop
 
+
 ## Technologies Utilisées
 - React
 - React Router
