@@ -1,4 +1,4 @@
-# Boutique de Vêtements Algérienne - Application E-commerce React
+# Boutique de Vêtements cosplay - Application E-commerce React
 
 ## Description du Projet
 Cette application e-commerce a été développée dans le cadre du cours de Développement d'Applications Web à l'Université d'Alger Benyoucef Benkhedda. Elle présente une boutique de vêtements en ligne avec des fonctionnalités de navigation, de détail des produits et de gestion de panier.
@@ -10,7 +10,8 @@ Cette application e-commerce a été développée dans le cadre du cours de Dév
 4. Ouvrez http://localhost:3000 dans votre navigateur
 
 ## Fonctionnalités Implémentées
-- Affichage des produits sur la page d'accueil
+- Affichage des categories sur la page d'accueil
+-une pge pour toutes les produits
 - Page de détails du produit avec compteur de vues
 - Système de panier fonctionnel avec persistance localStorage
 - Badge "Nouveau" pour les produits avec moins de 10 vues
@@ -25,5 +26,5 @@ Cette application e-commerce a été développée dans le cadre du cours de Dév
 - Local Storage pour la persistance des données
 
 ## Membres du Groupe
-- [Votre Nom]
-- [Nom des autres membres]
+- Hasnaa Nour Zioueche 
+- Section B grp 1
