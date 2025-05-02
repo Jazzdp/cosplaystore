@@ -11,12 +11,15 @@ Cette application e-commerce a été développée dans le cadre du cours de Dév
 
 ## Fonctionnalités Implémentées
 - Affichage des categories sur la page d'accueil
--une pge pour toutes les produits
+-une page pour toutes les produits
 - Page de détails du produit avec compteur de vues
 - Système de panier fonctionnel avec persistance localStorage
 - Badge "Nouveau" pour les produits avec moins de 10 vues
 - Barre de recherche pour filtrer les produits
 - Design responsive pour mobile et desktop
+- page des details de produit avec les commentaires , vues , nombre des achats
+- page de panier avec un resume
+- page de checkout pour confirmer la commande 
 
 
 ## Technologies Utilisées
