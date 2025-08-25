@@ -10,6 +10,7 @@ import { CartProvider } from './context/CartContext';
 import Checkout from './pages/checkout';
 import AllProducts from './pages/AllProducts';
 import Category from './pages/Category';
+import Login from "./components/Login";
 import './App.css'
 function App() {
   
@@ -33,6 +34,7 @@ function App() {
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/products" element={<AllProducts showToast={handleAddToCartToast} searchTerm={searchTerm} />} />
           <Route path="/category/:name" element={<Category searchTerm={searchTerm} showToast={handleAddToCartToast} />} />
+          <Route path="/login" element={<Login />} />
 
          </Routes>
 
