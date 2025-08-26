@@ -20,6 +20,10 @@ import jazz.cosplay_store.dto.AuthResponse;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import jazz.cosplay_store.service.UserService.*;
+import jazz.cosplay_store.model.User;
+import jazz.cosplay_store.repository.UserRepository;
+
+
 
     
 
@@ -30,17 +34,21 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
-
+private final UserRepository userRepository;
+private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final UserDetailsService userDetailsService;
     private final JwtUtil jwtUtil;
 
     public AuthController(AuthenticationManager authenticationManager,
                           UserDetailsService userDetailsService,
-                          JwtUtil jwtUtil) {
+                          JwtUtil jwtUtil , UserRepository userRepository,      
+                      PasswordEncoder passwordEncoder) {
         this.authenticationManager = authenticationManager;
         this.userDetailsService = userDetailsService;
         this.jwtUtil = jwtUtil;
+         this.userRepository = userRepository;           
+    this.passwordEncoder = passwordEncoder; 
     }
 
     
@@ -89,6 +97,40 @@ public ResponseEntity<?> login(@RequestBody AuthRequest request) {
         ));
     }
 }
-  
+  @PostMapping("/register")
+public ResponseEntity<?> register(@RequestBody User user) {
+    try {
+        // Check if username already exists
+        if (userRepository.findByUsername(user.getUsername()).isPresent()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Username already exists"));
+        }
+
+        // Basic validation
+        if (user.getUsername() == null || user.getUsername().trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Username is required"));
+        }
+        
+        if (user.getPassword() == null || user.getPassword().length() < 4) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Password must be at least 4 characters"));
+        }
+
+        // Hash the password and set role
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setRole("ROLE_USER");
+
+        // Save user
+        User savedUser = userRepository.save(user);
+
+        // Return success (don't include password hash)
+        return ResponseEntity.ok(Map.of(
+            "message", "Registration successful",
+            "username", savedUser.getUsername(),
+            "id", savedUser.getId()
+        ));
+
+    } catch (Exception e) {
+        return ResponseEntity.badRequest().body(Map.of("error", "Registration failed: " + e.getMessage()));
+    }
+}
 
 }
