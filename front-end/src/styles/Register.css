@@ -40,3 +40,15 @@
   text-decoration: underline;
   cursor: pointer;
 }
+.register {
+  background-color: #d891ad; /* Green background */
+  color: white; /* White text */
+  padding: 15px 20px; /* Padding inside the button */
+  border: none; /* No border */
+  border-radius: 5px; /* Slightly rounded corners */
+  cursor: pointer; /* Pointer cursor on hover */
+  font-size: 16px; /* Font size */
+  text-align: center; /* Center the text */
+  text-decoration: none; /* No underline */
+  display: inline-block; /* Allows for padding and margin adjustments */
+}

@@ -5,7 +5,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './pages/home';
 import ProductDetail from './pages/ProductDetail';
 import Cart from './pages/cart';
-import Navbar from './components/navbar';
+import Header from './components/Header';
 import { CartProvider } from './context/CartContext';
 import Checkout from './pages/checkout';
 import AllProducts from './pages/AllProducts';
@@ -13,6 +13,9 @@ import Category from './pages/Category';
 import Login from "./components/Login";
 import Register from './pages/Register';
 import './App.css'
+import './index.css';
+import SearchBar from './components/SearchBar';
+
 function App() {
   
   const [searchTerm, setSearchTerm] = useState('');
@@ -25,8 +28,8 @@ function App() {
 
   return (
     <CartProvider>
+      <Header />
       <Router>
-        <Navbar onSearch={setSearchTerm} />
         <Routes>
           <Route path="/" element={<Home searchTerm={searchTerm} showToast={handleAddToCartToast} />} />
           <Route path="/product/:id" element={<ProductDetail showToast={handleAddToCartToast} />} />

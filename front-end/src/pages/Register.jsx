@@ -110,7 +110,7 @@ const Register = () => {
           />
         </div>
 
-        <button type="submit" disabled={loading}>
+        <button className="register" type="submit" disabled={loading}>
           {loading ? 'Registering...' : 'Register'}
         </button>
         
