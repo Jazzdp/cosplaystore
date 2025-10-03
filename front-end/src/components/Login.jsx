@@ -28,18 +28,17 @@ function Login() {
       const data = await response.json();
       
       if (response.ok) {
-        // Store JWT token
-        localStorage.setItem('jwt', data.token);
-        
-        // Store user data (basic info for now)
-        localStorage.setItem('user', JSON.stringify({
-          username: username,
-          // You can add more user details here when your backend provides them
-          // email: data.email,
-          // fullName: data.fullName,
-          // role: data.role
-        }));
-        
+        // Store JWT token if present
+        if (data.token) localStorage.setItem('jwt', data.token);
+
+        // Build user object with available fields
+        const userObj = {
+          username: data.username || username,
+        };
+        if (data.id) userObj.id = data.id;
+
+        localStorage.setItem('user', JSON.stringify(userObj));
+
         alert("Login success!");
         window.location.href = '/'; // Redirect to home
       } else {

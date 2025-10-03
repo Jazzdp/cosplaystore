@@ -51,6 +51,28 @@ private final PasswordEncoder passwordEncoder;
     this.passwordEncoder = passwordEncoder; 
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<?> me(@RequestHeader(value = "Authorization", required = false) String authHeader) {
+        try {
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                return ResponseEntity.status(401).body(Map.of("error", "Missing or invalid Authorization header"));
+            }
+            String token = authHeader.substring(7);
+            String username = jwtUtil.extractUsername(token);
+            if (username == null) {
+                return ResponseEntity.status(401).body(Map.of("error", "Invalid token"));
+            }
+            java.util.Optional<User> found = userRepository.findByUsername(username);
+            if (found.isEmpty()) {
+                return ResponseEntity.status(404).body(Map.of("error", "User not found"));
+            }
+            User u = found.get();
+            return ResponseEntity.ok(Map.of("id", u.getId(), "username", u.getUsername()));
+        } catch (Exception e) {
+            return ResponseEntity.status(401).body(Map.of("error", "Invalid token or session", "message", e.getMessage()));
+        }
+    }
+
     
 
      /*@PostMapping("/login")
@@ -60,7 +82,21 @@ private final PasswordEncoder passwordEncoder;
         );
         final UserDetails userDetails = userDetailsService.loadUserByUsername(request.getUsername());
         final String jwt = jwtUtil.generateToken(userDetails);
-        return ResponseEntity.ok(new AuthResponse(jwt));
+        // Try to find the full user object to include id/username in response
+        try {
+            java.util.Optional<User> found = userRepository.findByUsername(request.getUsername());
+            if (found.isPresent()) {
+                User u = found.get();
+                return ResponseEntity.ok(Map.of(
+                    "token", jwt,
+                    "id", u.getId(),
+                    "username", u.getUsername()
+                ));
+            }
+        } catch (Exception ex) {
+            // If anything goes wrong, fall back to only returning the token
+        }
+        return ResponseEntity.ok(Map.of("token", jwt));
         
     } */
    @PostMapping("/login")

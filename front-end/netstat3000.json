@@ -1,0 +1,34 @@
+﻿[
+    {
+        "LocalAddress":  "::1",
+        "LocalPort":  3000,
+        "RemoteAddress":  "::1",
+        "RemotePort":  64695,
+        "State":  5,
+        "OwningProcess":  6708
+    },
+    {
+        "LocalAddress":  "::1",
+        "LocalPort":  3000,
+        "RemoteAddress":  "::1",
+        "RemotePort":  64588,
+        "State":  11,
+        "OwningProcess":  0
+    },
+    {
+        "LocalAddress":  "::1",
+        "LocalPort":  3000,
+        "RemoteAddress":  "::1",
+        "RemotePort":  64586,
+        "State":  11,
+        "OwningProcess":  0
+    },
+    {
+        "LocalAddress":  "::1",
+        "LocalPort":  3000,
+        "RemoteAddress":  "::",
+        "RemotePort":  0,
+        "State":  2,
+        "OwningProcess":  6708
+    }
+]

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import SearchOverlay from './SearchOverlay';
 
 const Header = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -218,6 +219,8 @@ const Header = () => {
     transition: 'background-color 0.2s'
   };
 const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
 // Add this style object at the top of your Header component
 const mobileStyles = {
@@ -250,13 +253,31 @@ const mobileStyles = {
 
             {/* Navigation */}
             
-{/* Navigation - Desktop */}
+            {/* Navigation - Desktop */}
 <nav style={{ display: window.innerWidth > 768 ? 'flex' : 'none', gap: '32px' }}>
   <a href="/" style={linkStyle}>Home</a>
   <a href="/products" style={linkStyle}>Products</a>
   
   <a href="/cart" style={linkStyle}>Your Cart</a>
 </nav>
+
+{/* Desktop search bar */}
+  {window.innerWidth > 768 && (
+  <div style={{ marginLeft: 16, flex: '0 0 320px' }}>
+    <input
+      placeholder="Search products..."
+      value={searchQuery}
+      onChange={(e) => { setSearchQuery(e.target.value); setIsSearchOpen(true); }}
+      onFocus={() => setIsSearchOpen(true)}
+      style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #e5e7eb' }}
+    />
+  </div>
+)}
+
+{/* Mobile search icon */}
+{window.innerWidth <= 768 && (
+  <button onClick={() => { setIsSearchOpen(true); setTimeout(()=>{ /* no-op, overlay will autofocus */ },50); }} style={{ background: 'none', border: 'none', fontSize: 20, marginLeft: 12 }} aria-label="Open search">🔍</button>
+)}
 
 {/* Mobile Menu Button */}
 <button 
@@ -301,6 +322,8 @@ const mobileStyles = {
           </div>
         </div>
       </header>
+
+  <SearchOverlay isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} initialQuery={searchQuery} onQueryChange={(q)=>setSearchQuery(q)} />
 
       {/* Backdrop */}
       <div 

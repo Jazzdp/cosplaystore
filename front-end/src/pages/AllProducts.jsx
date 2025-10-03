@@ -4,7 +4,7 @@ import { ArrowLeft, Search, Heart, ShoppingCart } from "lucide-react";
 import '../styles/category.css';
 import ItemCard from "../components/itemcard";
 
-const Allproducts = () => {
+const Allproducts = ({ showToast }) => {
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -372,7 +372,7 @@ const Allproducts = () => {
                 animation: `fadeInUp 0.6s ease ${index * 0.1}s both`
               }}
             >
-              <ItemCard product={prod} />
+              <ItemCard product={prod} showToast={showToast} />
             </div>
           ))}
         </div>

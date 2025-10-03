@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useCart } from '../context/CartContext';
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, Heart, ShoppingCart, Share2, Star, Truck, Shield, RotateCcw } from "lucide-react";
 import '../styles/productdetail.css';
@@ -11,6 +12,7 @@ export default function ProductDetail() {
   const [quantity, setQuantity] = useState(1);
   const [isLiked, setIsLiked] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const { addToCart } = useCart();
 
   useEffect(() => {
     if (!id) return;
@@ -512,8 +514,13 @@ export default function ProductDetail() {
                     e.target.style.boxShadow = '0 8px 25px rgba(236, 72, 153, 0.3)';
                   }}
                   onClick={() => {
-                    // Add to cart logic here
-                    console.log(`Added ${quantity} of ${product.name} to cart`);
+                    if (product.stockQuantity === 0) {
+                      window.dispatchEvent(new CustomEvent('out-of-stock', { detail: { product, quantity } }));
+                      return;
+                    }
+                    addToCart({ ...product, image: product.imageUrl }, quantity);
+                    // dispatch custom event so App-level toast can pick it up
+                    window.dispatchEvent(new CustomEvent('added-to-cart', { detail: { product, quantity } }));
                   }}
                 >
                   <ShoppingCart size={20} />

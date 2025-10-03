@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Toast, ToastContainer } from 'react-bootstrap';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
@@ -17,15 +17,28 @@ import './index.css';
 import SearchBar from './components/SearchBar';
 import Footer from "./components/footer";
 
+
 function App() {
   
   
-  const [showToast, setShowToast] = useState(false);
+  const [toast, setToast] = useState({ show: false, message: '', bg: 'success' });
 
-  const handleAddToCartToast = () => {
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), 2000);
+  const showToast = (message = '✔️ Added to cart', bg = 'success') => {
+    setToast({ show: true, message, bg });
+    setTimeout(() => setToast((t) => ({ ...t, show: false })), 2000);
   };
+
+  // Listen for custom add/out-of-stock events
+  useEffect(() => {
+    const addedHandler = () => showToast('✔️ Added to cart', 'success');
+    const oosHandler = () => showToast('Out of stock', 'danger');
+    window.addEventListener('added-to-cart', addedHandler);
+    window.addEventListener('out-of-stock', oosHandler);
+    return () => {
+      window.removeEventListener('added-to-cart', addedHandler);
+      window.removeEventListener('out-of-stock', oosHandler);
+    };
+  }, []);
 
   return (
     
@@ -33,14 +46,14 @@ function App() {
       <Router>
         <Header />
         <Routes>
-          <Route path="/" element={<Home  showToast={handleAddToCartToast} />} />
-          <Route path="/products/:id" element={<ProductDetail showToast={handleAddToCartToast} />} />
-          <Route path="/AllProducts" element={<AllProducts showToast={handleAddToCartToast} />} />
+          <Route path="/" element={<Home  showToast={showToast} />} />
+          <Route path="/products/:id" element={<ProductDetail showToast={showToast} />} />
+          <Route path="/AllProducts" element={<AllProducts showToast={showToast} />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/checkout" element={<Checkout />} />
-          <Route path="/products" element={<AllProducts showToast={handleAddToCartToast}  />} />
+          <Route path="/products" element={<AllProducts showToast={showToast}  />} />
           
-          <Route path="/category/:category" element={<Category  showToast={handleAddToCartToast}/>} />
+          <Route path="/category/:category" element={<Category  showToast={showToast}/>} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
          </Routes>
@@ -50,13 +63,13 @@ function App() {
              style={{ zIndex: 9999 }}
          >
          <Toast
-            show={showToast}
-            onClose={() => setShowToast(false)}
-             bg="success"
+            show={toast.show}
+            onClose={() => setToast((t) => ({ ...t, show: false }))}
+             bg={toast.bg}
              delay={3000}
               autohide
           >
-          <Toast.Body className="text-white">✔️ Added to cart</Toast.Body>
+          <Toast.Body className="text-white">{toast.message}</Toast.Body>
           </Toast>
          </ToastContainer> 
       </Router>

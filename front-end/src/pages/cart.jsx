@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useCart } from '../context/CartContext';
+import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ShoppingCart, Trash2, Plus, Minus } from 'lucide-react';
 import '../styles/cart.css';
 
@@ -19,9 +20,12 @@ const productAPI = {
 
 function Cart() {
   const { cartItems, updateQuantity, removeFromCart, getCartTotal } = useCart();
+  const navigate = useNavigate();
   const [productDetails, setProductDetails] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const initialLoadRef = useRef(false);
 
   const styles = {
     container: {
@@ -276,6 +280,16 @@ function Cart() {
     }
   };
 
+  const formatMoney = (value) => {
+    if (isNaN(value) || value === null) return '0.00';
+    // Use Intl.NumberFormat for better localization; default to 2 decimals
+    try {
+      return new Intl.NumberFormat(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
+    } catch (e) {
+      return Number(value).toFixed(2);
+    }
+  };
+
   // Add CSS animations
   useEffect(() => {
     if (!document.querySelector('#cart-animations')) {
@@ -296,44 +310,89 @@ function Cart() {
     }
   }, []);
 
-  // Fetch product details for all cart items
+  // Fetch product details for cart items. Only show the full-page loading
+  // spinner during the initial load. Subsequent changes (quantity updates)
+  // will not trigger the global loader; we only fetch missing product data
+  // and merge it into `productDetails` so the UI updates smoothly.
   useEffect(() => {
-    const fetchProducts = async () => {
+    let cancelled = false;
+    let loadTimer = null;
+    let loadingShown = false;
+
+    const fetchAll = async () => {
       if (cartItems.length === 0) {
-        setLoading(false);
-        setProductDetails({});
+        if (!cancelled) {
+          setProductDetails({});
+          setLoading(false);
+        }
         return;
       }
 
-      setLoading(true);
-      setError(null);
+      // Determine which ids are missing from cache
+      const missingIds = cartItems
+        .map(i => i.id)
+        .filter(id => !productDetails || !productDetails[id]);
+
+      // Decide whether this is the initial load where we should show the
+      // full-page loader. We only want the loader on the very first fetch
+      // (when `initialLoadRef.current` is false). Subsequent quantity
+      // updates should not show the global loader.
+      const isInitialLoad = !initialLoadRef.current && (!productDetails || Object.keys(productDetails).length === 0);
+      const needFullFetch = missingIds.length > 0;
+
+      if (isInitialLoad && needFullFetch) {
+        // Delay showing the full-page loader so very fast ops don't flicker UI
+        loadTimer = setTimeout(() => {
+          loadingShown = true;
+          setLoading(true);
+        }, 150);
+      }
 
       try {
-        const productPromises = cartItems.map(async (item) => {
-          const product = await productAPI.getProductById(item.id);
-          return { id: item.id, product };
+        if (missingIds.length === 0) {
+          // Nothing to fetch; ensure loading is off
+          if (!cancelled) setLoading(false);
+          return;
+        }
+
+        // Fetch only missing products
+        const productPromises = missingIds.map(async (id) => {
+          const product = await productAPI.getProductById(id);
+          return { id, product };
         });
 
         const results = await Promise.all(productPromises);
-        const productMap = {};
-        
-        results.forEach(({ id, product }) => {
-          if (product) {
-            productMap[id] = product;
-          }
+
+        if (cancelled) return;
+
+        // Merge results into existing productDetails
+        setProductDetails(prev => {
+          const merged = { ...(prev || {}) };
+          results.forEach(({ id, product }) => {
+            if (product) merged[id] = product;
+          });
+          return merged;
         });
 
-        setProductDetails(productMap);
+        // Mark that initial load has completed so we won't show the full
+        // page loader for subsequent updates.
+        initialLoadRef.current = true;
       } catch (err) {
-        setError('Failed to load product details');
-        console.error('Error fetching products:', err);
+        if (!cancelled) {
+          setError('Failed to load product details');
+          console.error('Error fetching products:', err);
+        }
       } finally {
-        setLoading(false);
+        if (loadTimer) clearTimeout(loadTimer);
+        // If loader was shown, hide it. If not shown, nothing was displayed so no flicker.
+        if (!cancelled && loadingShown) setLoading(false);
+        if (!cancelled && !loadingShown) setLoading(false); // ensure consistent state
       }
     };
 
-    fetchProducts();
-  }, [cartItems]);
+    fetchAll();
+    return () => { cancelled = true; };
+  }, [cartItems, refreshKey]);
 
   const handleQuantityChange = (productId, change) => {
     const currentItem = cartItems.find(item => item.id === productId);
@@ -372,7 +431,8 @@ function Cart() {
           <h2 style={{fontSize: '1.5rem', fontWeight: '600', color: '#ef4444', marginBottom: '10px', margin: 0}}>Something went wrong</h2>
           <p style={{marginBottom: '20px', margin: 0}}>{error}</p>
           <button 
-            onClick={() => window.location.reload()}
+            type="button"
+            onClick={() => setRefreshKey(k => k + 1)}
             style={{
               background: 'linear-gradient(135deg, #ec4899 0%, #be185d 100%)',
               color: 'white',
@@ -395,12 +455,13 @@ function Cart() {
       <div style={styles.container}>
         <div style={styles.emptyContainer}>
           <div style={styles.emptyIcon}>🛒</div>
-          <h1 style={styles.emptyTitle}>Your cart is empty</h1>
-          <p style={styles.emptyText}>
+           <h1 style={styles.emptyTitle}>Your cart is empty</h1> 
+           <p style={styles.emptyText}>
             Looks like you haven't added any items to your cart yet. Let's go shopping!
-          </p>
+          </p> 
           <button 
-            onClick={() => window.location.href = '/'}
+            type="button"
+            onClick={() => navigate('/')}
             style={{
               background: 'linear-gradient(135deg, #ec4899 0%, #be185d 100%)',
               color: 'white',
@@ -426,6 +487,7 @@ function Cart() {
       <div style={styles.heroSection}>
         <div style={styles.heroContent}>
           <button 
+            type="button"
             onClick={() => window.history.back()}
             style={styles.backButton}
             onMouseEnter={(e) => {
@@ -475,11 +537,12 @@ function Cart() {
                     <div style={styles.cartItemInfo}>
                       <h3 style={styles.cartItemName}>{product.name}</h3>
                       <div style={styles.cartItemCategory}>{product.category}</div>
-                      <div style={styles.cartItemPrice}>${product.price}</div>
+                      <div style={styles.cartItemPrice}>${formatMoney(product.price)}</div>
                       
-                      <div style={styles.cartItemActions}>
+                        <div style={styles.cartItemActions}>
                         <div style={styles.quantityControl}>
                           <button 
+                            type="button"
                             style={styles.quantityButton}
                             onClick={() => handleQuantityChange(item.id, -1)}
                             onMouseEnter={(e) => {
@@ -493,6 +556,7 @@ function Cart() {
                           </button>
                           <span style={styles.quantityValue}>{item.quantity}</span>
                           <button 
+                            type="button"
                             style={styles.quantityButton}
                             onClick={() => handleQuantityChange(item.id, 1)}
                             onMouseEnter={(e) => {
@@ -505,8 +569,12 @@ function Cart() {
                             <Plus size={16} />
                           </button>
                         </div>
+                        <div style={{marginTop: '8px', color: '#6b7280', fontWeight: '600'}}>
+                          Item total: ${formatMoney(calculateItemTotal(item))}
+                        </div>
                         
                         <button 
+                          type="button"
                           style={styles.removeButton}
                           onClick={() => removeFromCart(item.id)}
                           onMouseEnter={(e) => {
@@ -532,7 +600,7 @@ function Cart() {
               
               <div style={styles.summaryRow}>
                 <span>Items ({cartItems.reduce((sum, item) => sum + item.quantity, 0)})</span>
-                <span>${getCartTotal()}</span>
+                <span>${formatMoney(getCartTotal())}</span>
               </div>
               
               <div style={styles.summaryRow}>
@@ -542,12 +610,13 @@ function Cart() {
               
               <div style={styles.summaryTotal}>
                 <span>Total</span>
-                <span>${getCartTotal()}</span>
+                <span>${formatMoney(getCartTotal())}</span>
               </div>
               
               <button 
+                type="button"
                 style={styles.checkoutButton}
-                onClick={() => window.location.href = '/checkout'}
+                onClick={() => navigate('/checkout')}
                 onMouseEnter={(e) => {
                   e.target.style.transform = 'translateY(-2px)';
                   e.target.style.boxShadow = '0 12px 35px rgba(236, 72, 153, 0.4)';
@@ -562,8 +631,9 @@ function Cart() {
               </button>
               
               <button 
+                type="button"
                 style={styles.continueButton}
-                onClick={() => window.location.href = '/'}
+                onClick={() => navigate('/')}
                 onMouseEnter={(e) => {
                   e.target.style.background = '#fce7f3';
                 }}
