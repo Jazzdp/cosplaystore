@@ -30,8 +30,8 @@ function App() {
   return (
     
     <CartProvider>
-      <Header />
       <Router>
+        <Header />
         <Routes>
           <Route path="/" element={<Home  showToast={handleAddToCartToast} />} />
           <Route path="/products/:id" element={<ProductDetail showToast={handleAddToCartToast} />} />
@@ -60,6 +60,7 @@ function App() {
           </Toast>
          </ToastContainer> 
       </Router>
+      <Footer />
     </CartProvider>
     
     

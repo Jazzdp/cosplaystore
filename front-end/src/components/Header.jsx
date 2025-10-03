@@ -245,7 +245,7 @@ const mobileStyles = {
             
             {/* Logo */}
             <div>
-              <h1 style={logoStyle}>CosplayStore</h1>
+              <h1 style={logoStyle}> <a href="/" >Sakura Cosplay</a></h1>
             </div>
 
             {/* Navigation */}
@@ -254,7 +254,7 @@ const mobileStyles = {
 <nav style={{ display: window.innerWidth > 768 ? 'flex' : 'none', gap: '32px' }}>
   <a href="/" style={linkStyle}>Home</a>
   <a href="/products" style={linkStyle}>Products</a>
-  <a href="category" style={linkStyle}>Categories</a>
+  
   <a href="/cart" style={linkStyle}>Your Cart</a>
 </nav>
 
@@ -286,7 +286,7 @@ const mobileStyles = {
   }}>
     <a href="/" style={{...linkStyle, display: 'block', padding: '12px 0'}}>Home</a>
     <a href="/prodcuts" style={{...linkStyle, display: 'block', padding: '12px 0'}}>Products</a>
-    <a href="/category" style={{...linkStyle, display: 'block', padding: '12px 0'}}>Categories</a>
+    
     <a href="cart" style={{...linkStyle, display: 'block', padding: '12px 0'}}>Your Cart</a>
   </div>
 )}

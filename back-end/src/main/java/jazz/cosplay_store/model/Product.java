@@ -24,11 +24,13 @@ public class Product {
     
     private String size; // e.g., "S", "M", "L", "XL"
     
-    private String imageUrl;
     
+    @Column(name = "image_url")
+    private String imageUrl;
+    // map explicitly to the camelCase DB column `stockQuantity`
+    @Column(name = "stockQuantity")
     private Integer stockQuantity;
     
-    private Boolean available = true;
 
     // Constructors
     public Product() {}
@@ -64,10 +66,9 @@ public class Product {
 
     public Integer getStockQuantity() { return stockQuantity; }
     public void setStockQuantity(Integer stockQuantity) { this.stockQuantity = stockQuantity; }
-
-    public Boolean getAvailable() { return available; }
-    public void setAvailable(Boolean available) { this.available = available; }
 }
+
+
     
 
 

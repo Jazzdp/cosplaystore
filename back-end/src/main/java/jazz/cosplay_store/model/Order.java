@@ -21,6 +21,7 @@ public class Order {
     private Product product;
 
     private int quantity;
+    private String status;
 
     private LocalDateTime createdAt = LocalDateTime.now();
 
@@ -28,11 +29,15 @@ public class Order {
     public Long getId() {
         return id;
     }
-
+public String getStatus() {
+        return status;
+    }
     public void setId(Long id) {
         this.id = id;
     }
-
+public void setStatus(String status) {
+        this.status = status;
+    }
     public User getUser() {
         return user;
     }

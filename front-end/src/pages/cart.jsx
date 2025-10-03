@@ -1,19 +1,419 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
+import { ArrowLeft, ShoppingCart, Trash2, Plus, Minus } from 'lucide-react';
 import '../styles/cart.css';
 
+// API service to fetch product details
+const productAPI = {
+  getProductById: async (id) => {
+    try {
+      const response = await fetch(`http://localhost:8080/products/${id}`);
+      if (!response.ok) throw new Error('Product not found');
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching product:', error);
+      return null;
+    }
+  }
+};
+
 function Cart() {
-  const { cartItems, changeQuantity, removeFromCart, getTotal } = useCart();
+  const { cartItems, updateQuantity, removeFromCart, getCartTotal } = useCart();
+  const [productDetails, setProductDetails] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const styles = {
+    container: {
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #fdf2f8 0%, #fce7f3 50%, #fbcfe8 100%)',
+      fontFamily: '"Inter", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif'
+    },
+    heroSection: {
+      background: 'linear-gradient(135deg, #ec4899 0%, #be185d 50%, #9d174d 100%)',
+      padding: '40px 20px',
+      color: 'white'
+    },
+    heroContent: {
+      maxWidth: '1200px',
+      margin: '0 auto',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '20px'
+    },
+    backButton: {
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: '8px',
+      color: 'white',
+      textDecoration: 'none',
+      fontSize: '1rem',
+      padding: '8px 16px',
+      borderRadius: '8px',
+      background: 'rgba(255,255,255,0.1)',
+      transition: 'all 0.3s ease',
+      backdropFilter: 'blur(10px)',
+      border: 'none',
+      cursor: 'pointer'
+    },
+    title: {
+      fontSize: '2.5rem',
+      fontWeight: '700',
+      margin: 0
+    },
+    mainContent: {
+      maxWidth: '1200px',
+      margin: '0 auto',
+      padding: '40px 20px'
+    },
+    cartContainer: {
+      background: 'white',
+      borderRadius: '24px',
+      overflow: 'hidden',
+      boxShadow: '0 20px 60px rgba(0,0,0,0.1)',
+      padding: '40px'
+    },
+    cartGrid: {
+      display: 'grid',
+      gridTemplateColumns: '2fr 1fr',
+      gap: '40px'
+    },
+    cartItems: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '20px'
+    },
+    cartItem: {
+      display: 'flex',
+      gap: '20px',
+      padding: '20px',
+      background: '#fef7ff',
+      borderRadius: '16px',
+      border: '1px solid #fce7f3',
+      transition: 'all 0.3s ease'
+    },
+    cartItemImage: {
+      width: '120px',
+      height: '120px',
+      objectFit: 'cover',
+      borderRadius: '12px',
+      flexShrink: 0
+    },
+    cartItemInfo: {
+      flex: 1,
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '10px'
+    },
+    cartItemName: {
+      fontSize: '1.2rem',
+      fontWeight: '600',
+      color: '#1f2937',
+      margin: 0
+    },
+    cartItemCategory: {
+      fontSize: '0.9rem',
+      color: '#ec4899',
+      fontWeight: '500',
+      textTransform: 'uppercase',
+      letterSpacing: '1px'
+    },
+    cartItemPrice: {
+      fontSize: '1.1rem',
+      fontWeight: '600',
+      color: '#ec4899',
+      margin: 0
+    },
+    cartItemActions: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginTop: 'auto'
+    },
+    quantityControl: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '10px',
+      background: 'white',
+      borderRadius: '8px',
+      padding: '5px',
+      border: '1px solid #e5e7eb'
+    },
+    quantityButton: {
+      width: '30px',
+      height: '30px',
+      border: 'none',
+      background: '#ec4899',
+      color: 'white',
+      borderRadius: '6px',
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontSize: '1rem',
+      fontWeight: '600',
+      transition: 'all 0.3s ease'
+    },
+    quantityValue: {
+      minWidth: '30px',
+      textAlign: 'center',
+      fontWeight: '600',
+      color: '#374151'
+    },
+    removeButton: {
+      background: 'none',
+      border: 'none',
+      color: '#ef4444',
+      cursor: 'pointer',
+      padding: '8px',
+      borderRadius: '6px',
+      transition: 'all 0.3s ease',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center'
+    },
+    summary: {
+      background: '#fef7ff',
+      borderRadius: '16px',
+      padding: '30px',
+      border: '1px solid #fce7f3',
+      height: 'fit-content',
+      position: 'sticky',
+      top: '20px'
+    },
+    summaryTitle: {
+      fontSize: '1.5rem',
+      fontWeight: '700',
+      color: '#1f2937',
+      marginBottom: '20px',
+      margin: 0
+    },
+    summaryRow: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      marginBottom: '15px',
+      fontSize: '1rem',
+      color: '#4b5563'
+    },
+    summaryTotal: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      marginTop: '20px',
+      paddingTop: '20px',
+      borderTop: '1px solid #e5e7eb',
+      fontSize: '1.2rem',
+      fontWeight: '700',
+      color: '#1f2937'
+    },
+    checkoutButton: {
+      width: '100%',
+      background: 'linear-gradient(135deg, #ec4899 0%, #be185d 100%)',
+      color: 'white',
+      border: 'none',
+      borderRadius: '12px',
+      padding: '15px 25px',
+      fontSize: '1rem',
+      fontWeight: '600',
+      cursor: 'pointer',
+      transition: 'all 0.3s ease',
+      marginTop: '20px',
+      boxShadow: '0 8px 25px rgba(236, 72, 153, 0.3)'
+    },
+    continueButton: {
+      width: '100%',
+      background: 'white',
+      color: '#ec4899',
+      border: '2px solid #ec4899',
+      borderRadius: '12px',
+      padding: '15px 25px',
+      fontSize: '1rem',
+      fontWeight: '600',
+      cursor: 'pointer',
+      transition: 'all 0.3s ease',
+      marginTop: '10px'
+    },
+    emptyContainer: {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: '60vh',
+      textAlign: 'center'
+    },
+    emptyIcon: {
+      fontSize: '4rem',
+      marginBottom: '20px'
+    },
+    emptyTitle: {
+      fontSize: '2rem',
+      fontWeight: '700',
+      color: '#1f2937',
+      marginBottom: '10px',
+      margin: 0
+    },
+    emptyText: {
+      fontSize: '1.1rem',
+      color: '#6b7280',
+      marginBottom: '30px',
+      margin: 0
+    },
+    loadingContainer: {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: '60vh',
+      color: '#6b7280'
+    },
+    spinner: {
+      width: '50px',
+      height: '50px',
+      border: '4px solid #fce7f3',
+      borderTop: '4px solid #ec4899',
+      borderRadius: '50%',
+      animation: 'spin 1s linear infinite',
+      marginBottom: '20px'
+    }
+  };
+
+  // Add CSS animations
+  useEffect(() => {
+    if (!document.querySelector('#cart-animations')) {
+      const style = document.createElement('style');
+      style.id = 'cart-animations';
+      style.textContent = `
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        @media (max-width: 768px) {
+          .cart-grid {
+            grid-template-columns: 1fr !important;
+          }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+  }, []);
+
+  // Fetch product details for all cart items
+  useEffect(() => {
+    const fetchProducts = async () => {
+      if (cartItems.length === 0) {
+        setLoading(false);
+        setProductDetails({});
+        return;
+      }
+
+      setLoading(true);
+      setError(null);
+
+      try {
+        const productPromises = cartItems.map(async (item) => {
+          const product = await productAPI.getProductById(item.id);
+          return { id: item.id, product };
+        });
+
+        const results = await Promise.all(productPromises);
+        const productMap = {};
+        
+        results.forEach(({ id, product }) => {
+          if (product) {
+            productMap[id] = product;
+          }
+        });
+
+        setProductDetails(productMap);
+      } catch (err) {
+        setError('Failed to load product details');
+        console.error('Error fetching products:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, [cartItems]);
+
+  const handleQuantityChange = (productId, change) => {
+    const currentItem = cartItems.find(item => item.id === productId);
+    if (!currentItem) return;
+
+    const newQuantity = currentItem.quantity + change;
+    
+    if (newQuantity <= 0) {
+      removeFromCart(productId);
+    } else {
+      updateQuantity(productId, newQuantity);
+    }
+  };
+
+  const calculateItemTotal = (item) => {
+    const product = productDetails[item.id];
+    return product ? product.price * item.quantity : 0;
+  };
+
+  if (loading) {
+    return (
+      <div style={styles.container}>
+        <div style={styles.loadingContainer}>
+          <div style={styles.spinner}></div>
+          <p>Loading your cart...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div style={styles.container}>
+        <div style={styles.loadingContainer}>
+          <div style={{fontSize: '3rem', marginBottom: '20px'}}>⚠️</div>
+          <h2 style={{fontSize: '1.5rem', fontWeight: '600', color: '#ef4444', marginBottom: '10px', margin: 0}}>Something went wrong</h2>
+          <p style={{marginBottom: '20px', margin: 0}}>{error}</p>
+          <button 
+            onClick={() => window.location.reload()}
+            style={{
+              background: 'linear-gradient(135deg, #ec4899 0%, #be185d 100%)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '10px 20px',
+              cursor: 'pointer',
+              fontWeight: '600'
+            }}
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (cartItems.length === 0) {
     return (
-      <div className="cart-empty">
-        <div className="cart-empty-content">
-          <div className="cart-empty-icon">🛒</div>
-          <h2>Your cart is empty</h2>
-          <p>Looks like you haven't added any items to your cart yet.</p>
-          <button className="btn-shop-now" onClick={() => window.location.href = '/'}>
-            Shop Now
+      <div style={styles.container}>
+        <div style={styles.emptyContainer}>
+          <div style={styles.emptyIcon}>🛒</div>
+          <h1 style={styles.emptyTitle}>Your cart is empty</h1>
+          <p style={styles.emptyText}>
+            Looks like you haven't added any items to your cart yet. Let's go shopping!
+          </p>
+          <button 
+            onClick={() => window.location.href = '/'}
+            style={{
+              background: 'linear-gradient(135deg, #ec4899 0%, #be185d 100%)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '12px',
+              padding: '15px 30px',
+              fontSize: '1rem',
+              fontWeight: '600',
+              cursor: 'pointer',
+              boxShadow: '0 8px 25px rgba(236, 72, 153, 0.3)'
+            }}
+          >
+            Start Shopping
           </button>
         </div>
       </div>
@@ -21,61 +421,161 @@ function Cart() {
   }
 
   return (
-    <div className="cart-container">
-      <h2 className="cart-title">Your Shopping Cart</h2>
-      
-      <div className="cart-items">
-        {cartItems.map((item) => (
-          <div key={item.id} className="cart-item">
-            <div className="cart-item-image">
-              <img src={item.image} alt={item.name} />
-            </div>
-            
-            <div className="cart-item-details">
-              <h3 className="cart-item-name">{item.name}</h3>
-              <p className="cart-item-price">{item.price} DZD</p>
-            </div>
-            
-            <div className="cart-item-quantity">
-              <button className="quantity-btn" onClick={() => changeQuantity(item.id, -1)}>−</button>
-              <span className="quantity-value">{item.quantity}</span>
-              <button className="quantity-btn" onClick={() => changeQuantity(item.id, 1)}>+</button>
-            </div>
-            
-            <div className="cart-item-subtotal">{item.price * item.quantity} DZD</div>
-            
-            <button className="remove-btn" onClick={() => removeFromCart(item.id)}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
-                <path fillRule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
-              </svg>
-            </button>
-          </div>
-        ))}
-      </div>
-      
-      <div className="cart-summary">
-        <div className="cart-summary-row">
-          <span>Subtotal</span>
-          <span>{getTotal()} DZD</span>
-        </div>
-        <div className="cart-summary-row">
-          <span>Shipping</span>
-          <span>Free</span>
-        </div>
-        <div className="cart-summary-row total">
-          <span>Total</span>
-          <span>{getTotal()} DZD</span>
-        </div>
-        
-        <button className="checkout-btn" onClick={() => window.location.href = '/checkout'}>
-          Proceed to Checkout
+    <div style={styles.container}>
+      {/* Hero Section */}
+      <div style={styles.heroSection}>
+        <div style={styles.heroContent}>
+          <button 
+            onClick={() => window.history.back()}
+            style={styles.backButton}
+            onMouseEnter={(e) => {
+              e.target.style.background = 'rgba(255,255,255,0.2)';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.background = 'rgba(255,255,255,0.1)';
+            }}
+          >
+            <ArrowLeft size={20} />
+            Back
           </button>
+          <h1 style={styles.title}>Shopping Cart</h1>
+        </div>
+      </div>
 
-        
-        <button className="continue-shopping-btn" onClick={() => window.location.href = '/'}>
-          Continue Shopping
-        </button>
+      {/* Main Content */}
+      <div style={styles.mainContent}>
+        <div style={styles.cartContainer}>
+          <div style={styles.cartGrid} className="cart-grid">
+            {/* Cart Items */}
+            <div style={styles.cartItems}>
+              {cartItems.map((item) => {
+                const product = productDetails[item.id];
+                
+                if (!product) {
+                  return (
+                    <div key={item.id} style={styles.cartItem}>
+                      <div style={{textAlign: 'center', width: '100%', color: '#6b7280'}}>
+                        Product not found
+                      </div>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div key={item.id} style={styles.cartItem}>
+                    <img 
+                      src={product.imageUrl || '/placeholder-image.jpg'} 
+                      alt={product.name}
+                      style={styles.cartItemImage}
+                      onError={(e) => {
+                        e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgdmlld0JveD0iMCAwIDEyMCAxMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMjAiIGhlaWdodD0iMTIwIiBmaWxsPSIjRkNFN0YzIi8+CjxwYXRoIGQ9Ik02MCA0MEM0NC41MzYgNDAgMzIgNTIuNTM2IDMyIDY4VjkyQzMyIDEwNy40NjQgNDQuNTM2IDEyMCA2MCAxMjBDNzUuNDY0IDEyMCA4OCAxMDcuNDY0IDg4IDkyVjY4Qzg4IDUyLjUzNiA3NS40NjQgNDAgNjAgNDBaIiBmaWxsPSIjRUM0ODk5Ii8+CjxjaXJjbGUgY3g9IjU0IiBjeT0iNjUiIHI9IjMiIGZpbGw9IndoaXRlIi8+CjxjaXJjbGUgY3g9IjY2IiBjeT0iNjUiIHI9IjMiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik01NCA4NUM1NCA4NS4yIDU0LjE5MSA4NSA1OCA4NUg2MkM2NS44MDkgODUgNjYgODUuMiA2NiA4NSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIxIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPC9zdmc+Cg==';
+                      }}
+                    />
+                    
+                    <div style={styles.cartItemInfo}>
+                      <h3 style={styles.cartItemName}>{product.name}</h3>
+                      <div style={styles.cartItemCategory}>{product.category}</div>
+                      <div style={styles.cartItemPrice}>${product.price}</div>
+                      
+                      <div style={styles.cartItemActions}>
+                        <div style={styles.quantityControl}>
+                          <button 
+                            style={styles.quantityButton}
+                            onClick={() => handleQuantityChange(item.id, -1)}
+                            onMouseEnter={(e) => {
+                              e.target.style.background = '#be185d';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.target.style.background = '#ec4899';
+                            }}
+                          >
+                            <Minus size={16} />
+                          </button>
+                          <span style={styles.quantityValue}>{item.quantity}</span>
+                          <button 
+                            style={styles.quantityButton}
+                            onClick={() => handleQuantityChange(item.id, 1)}
+                            onMouseEnter={(e) => {
+                              e.target.style.background = '#be185d';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.target.style.background = '#ec4899';
+                            }}
+                          >
+                            <Plus size={16} />
+                          </button>
+                        </div>
+                        
+                        <button 
+                          style={styles.removeButton}
+                          onClick={() => removeFromCart(item.id)}
+                          onMouseEnter={(e) => {
+                            e.target.style.background = '#fef2f2';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.background = 'none';
+                          }}
+                          title="Remove from cart"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            
+            {/* Cart Summary */}
+            <div style={styles.summary}>
+              <h2 style={styles.summaryTitle}>Order Summary</h2>
+              
+              <div style={styles.summaryRow}>
+                <span>Items ({cartItems.reduce((sum, item) => sum + item.quantity, 0)})</span>
+                <span>${getCartTotal()}</span>
+              </div>
+              
+              <div style={styles.summaryRow}>
+                <span>Shipping</span>
+                <span style={{color: '#10b981', fontWeight: '600'}}>Free</span>
+              </div>
+              
+              <div style={styles.summaryTotal}>
+                <span>Total</span>
+                <span>${getCartTotal()}</span>
+              </div>
+              
+              <button 
+                style={styles.checkoutButton}
+                onClick={() => window.location.href = '/checkout'}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = 'translateY(-2px)';
+                  e.target.style.boxShadow = '0 12px 35px rgba(236, 72, 153, 0.4)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = '0 8px 25px rgba(236, 72, 153, 0.3)';
+                }}
+              >
+                <ShoppingCart size={20} style={{marginRight: '8px'}} />
+                Proceed to Checkout
+              </button>
+              
+              <button 
+                style={styles.continueButton}
+                onClick={() => window.location.href = '/'}
+                onMouseEnter={(e) => {
+                  e.target.style.background = '#fce7f3';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = 'white';
+                }}
+              >
+                Continue Shopping
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

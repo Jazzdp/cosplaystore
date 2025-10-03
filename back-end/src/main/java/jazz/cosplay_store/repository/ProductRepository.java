@@ -13,9 +13,11 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     
     // Find products by category
     List<Product> findByCategory(String category);
-    
-    // Find available products
-    List<Product> findByAvailableTrue();
+    // Find distinct categories
+    @Query("SELECT DISTINCT p.category FROM Product p")
+List<String> findDistinctCategories();
+
+   
     
     // Find products by name (case insensitive)
     List<Product> findByNameContainingIgnoreCase(String name);
@@ -24,6 +26,5 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query("SELECT p FROM Product p WHERE p.price BETWEEN :minPrice AND :maxPrice")
     List<Product> findByPriceRange(@Param("minPrice") double minPrice, @Param("maxPrice") double maxPrice);
     
-    // Find products by category and available status
-    List<Product> findByCategoryAndAvailableTrue(String category);
+   
 }

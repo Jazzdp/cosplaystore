@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/products")
+@CrossOrigin(origins = "http://localhost:3000")
 public class ProductController {
 
     private final ProductRepository productRepository;
@@ -31,7 +32,10 @@ public class ProductController {
                         p.getName(),
                         p.getDescription(),
                         p.getPrice(),
-                        p.getStockQuantity()
+                        p.getStockQuantity() != null ? p.getStockQuantity() : 0,
+                        p.getImageUrl(),
+                        p.getCategory(),
+                        p.getSize()
                 ))
                 .collect(Collectors.toList());
     }
@@ -46,11 +50,38 @@ public class ProductController {
                                 p.getName(),
                                 p.getDescription(),
                                 p.getPrice(),
-                                p.getStockQuantity()
+                                p.getStockQuantity() != null ? p.getStockQuantity() : 0,
+                                p.getImageUrl(),
+                                p.getCategory(),
+                                p.getSize()
                         )
                 ))
                 .orElse(ResponseEntity.notFound().build());
     }
+    // Get all distinct categories
+@GetMapping("/categories")
+public List<String> getCategories() {
+    return productRepository.findDistinctCategories();
+}
+
+// Get products by category
+@GetMapping("/categories/{category}")
+public List<ProductResponseDTO> getProductsByCategory(@PathVariable String category) {
+    return productRepository.findByCategory(category)
+            .stream()
+            .map(p -> new ProductResponseDTO(
+                    p.getId(),
+                    p.getName(),
+                    p.getDescription(),
+                    p.getPrice(),
+                    p.getStockQuantity() != null ? p.getStockQuantity() : 0,
+                    p.getImageUrl(),
+                    p.getCategory(),
+                    p.getSize()
+            ))
+            .collect(Collectors.toList());
+}
+
 
     // CREATE product
     @PostMapping
@@ -59,7 +90,9 @@ public class ProductController {
         product.setName(productDTO.getName());
         product.setDescription(productDTO.getDescription());
         product.setPrice(productDTO.getPrice());
-        product.setStockQuantity(productDTO.getStock());
+        product.setStockQuantity(productDTO.getStockQuantity());
+        product.setCategory(productDTO.getCategory());
+        product.setImageUrl(productDTO.getImageUrl());
 
         Product saved = productRepository.save(product);
 
@@ -68,7 +101,10 @@ public class ProductController {
                 saved.getName(),
                 saved.getDescription(),
                 saved.getPrice(),
-                saved.getStockQuantity()
+                saved.getStockQuantity(),
+                saved.getImageUrl(),
+                saved.getCategory(),
+                saved.getSize()
         ));
     }
 
@@ -83,16 +119,20 @@ public class ProductController {
                     existing.setName(productDTO.getName());
                     existing.setDescription(productDTO.getDescription());
                     existing.setPrice(productDTO.getPrice());
-                    existing.setStockQuantity(productDTO.getStock());
+                    existing.setStockQuantity(productDTO.getStockQuantity());
 
                     Product updated = productRepository.save(existing);
+                    
 
                     return ResponseEntity.ok(new ProductResponseDTO(
                             updated.getId(),
                             updated.getName(),
                             updated.getDescription(),
                             updated.getPrice(),
-                            updated.getStockQuantity()
+                            updated.getStockQuantity(),
+                                updated.getImageUrl(),
+                                updated.getCategory(),
+                                updated.getSize()
                     ));
                 })
                 .orElse(ResponseEntity.notFound().build());

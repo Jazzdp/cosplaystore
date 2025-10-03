@@ -13,7 +13,7 @@ import java.util.function.Function;
 @Component
 public class JwtUtil {
 
-    private final SecretKey secretKey = Keys.hmacShaKeyFor("your-very-secure-and-long-secret-key-1234567890".getBytes());
+    private final SecretKey secretKey = Keys.hmacShaKeyFor("3cfa76ef14937c1c0ea519f8fc057a80fcd04a7420f8e8bcd0a7567c272e007b".getBytes());
     private final long expiration = 1000 * 60 * 60; // 1 hour
 
     // Extract username from token

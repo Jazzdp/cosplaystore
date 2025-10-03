@@ -1,149 +1,598 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import product from '../data/data.js'; 
+import React, { useEffect, useState } from "react";
+import { useParams, Link } from "react-router-dom";
+import { ArrowLeft, Heart, ShoppingCart, Share2, Star, Truck, Shield, RotateCcw } from "lucide-react";
 import '../styles/productdetail.css';
-import { useCart } from '../context/CartContext';
-import { Toast } from 'react-bootstrap';
 
-
-const ProductDetail = ({ showToast }) => {
+export default function ProductDetail() {
   const { id } = useParams();
-  const [productData, setProductData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const { addToCart } = useCart();
-  
-
-
+  const [product, setProduct] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [quantity, setQuantity] = useState(1);
+  const [isLiked, setIsLiked] = useState(false);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   useEffect(() => {
-    if (product) {
-      const productId = parseInt(id);
-      const foundProduct = product.find(p => p.id === productId);
-      
-      if (foundProduct) {
-          const viewsData = JSON.parse(localStorage.getItem('productViews')) || {};
-        
-          // Increment the view count
-          const currentViews = viewsData[productId] || foundProduct.views || 0;
-          const newViews = currentViews + 1;
-          
-          // Update localStorage
-          viewsData[productId] = newViews;
-          localStorage.setItem('productViews', JSON.stringify(viewsData));
-          
-          // Create a copy with updated views
-          const productWithIncrementedViews = {
-            ...foundProduct,
-            views: newViews
-        };
-        
-        setProductData(productWithIncrementedViews);
-      
-     
-        
+    if (!id) return;
+    
+    setIsLoading(true);
+    fetch(`http://localhost:8080/products/${id}`)
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch product");
+        return res.json();
+      })
+      .then((data) => {
+        setProduct(data);
+        setIsLoading(false);
+      })
+      .catch((err) => {
+        console.error(err);
+        setError(err.message);
+        setIsLoading(false);
+      });
+  }, [id]);
 
+  const styles = {
+    container: {
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #fdf2f8 0%, #fce7f3 50%, #fbcfe8 100%)',
+      fontFamily: '"Inter", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif'
+    },
+    heroSection: {
+      background: 'linear-gradient(135deg, #ec4899 0%, #be185d 50%, #9d174d 100%)',
+      padding: '40px 20px',
+      color: 'white'
+    },
+    heroContent: {
+      maxWidth: '1200px',
+      margin: '0 auto'
+    },
+    backButton: {
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: '8px',
+      color: 'white',
+      textDecoration: 'none',
+      fontSize: '1rem',
+      padding: '8px 16px',
+      borderRadius: '8px',
+      background: 'rgba(255,255,255,0.1)',
+      transition: 'all 0.3s ease',
+      backdropFilter: 'blur(10px)'
+    },
+    mainContent: {
+      maxWidth: '1200px',
+      margin: '0 auto',
+      padding: '40px 20px'
+    },
+    productContainer: {
+      background: 'white',
+      borderRadius: '24px',
+      overflow: 'hidden',
+      boxShadow: '0 20px 60px rgba(0,0,0,0.1)'
+    },
+    productGrid: {
+      display: 'grid',
+      gridTemplateColumns: '1fr 1fr',
+      gap: '0'
+    },
+    imageSection: {
+      padding: '40px',
+      background: 'linear-gradient(135deg, #fef7ff 0%, #fce7f3 100%)',
+      display: 'flex',
+      flexDirection: 'column'
+    },
+    mainImage: {
+      width: '100%',
+      height: '400px',
+      objectFit: 'cover',
+      borderRadius: '16px',
+      boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
+      marginBottom: '20px'
+    },
+    thumbnailContainer: {
+      display: 'flex',
+      gap: '10px',
+      justifyContent: 'center'
+    },
+    thumbnail: {
+      width: '60px',
+      height: '60px',
+      objectFit: 'cover',
+      borderRadius: '8px',
+      cursor: 'pointer',
+      opacity: 0.6,
+      transition: 'all 0.3s ease',
+      border: '2px solid transparent'
+    },
+    thumbnailActive: {
+      opacity: 1,
+      border: '2px solid #ec4899'
+    },
+    infoSection: {
+      padding: '40px',
+      display: 'flex',
+      flexDirection: 'column'
+    },
+    category: {
+      color: '#ec4899',
+      fontSize: '0.9rem',
+      fontWeight: '600',
+      textTransform: 'uppercase',
+      letterSpacing: '1px',
+      marginBottom: '10px'
+    },
+    title: {
+      fontSize: '2.5rem',
+      fontWeight: '700',
+      color: '#1f2937',
+      lineHeight: '1.2',
+      marginBottom: '15px'
+    },
+    rating: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px',
+      marginBottom: '20px'
+    },
+    stars: {
+      display: 'flex',
+      gap: '2px'
+    },
+    ratingText: {
+      color: '#6b7280',
+      fontSize: '0.9rem'
+    },
+    price: {
+      fontSize: '2rem',
+      fontWeight: '700',
+      color: '#ec4899',
+      marginBottom: '20px'
+    },
+    description: {
+      color: '#4b5563',
+      lineHeight: '1.6',
+      marginBottom: '30px',
+      fontSize: '1rem'
+    },
+    stockSection: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '10px',
+      marginBottom: '30px',
+      padding: '15px',
+      background: '#f0fdf4',
+      borderRadius: '12px',
+      border: '1px solid #bbf7d0'
+    },
+    stockDot: {
+      width: '8px',
+      height: '8px',
+      background: '#10b981',
+      borderRadius: '50%'
+    },
+    stockText: {
+      color: '#065f46',
+      fontWeight: '600'
+    },
+    quantitySection: {
+      marginBottom: '30px'
+    },
+    quantityLabel: {
+      display: 'block',
+      fontSize: '1rem',
+      fontWeight: '600',
+      color: '#374151',
+      marginBottom: '10px'
+    },
+    quantityControl: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '15px'
+    },
+    quantityButton: {
+      width: '40px',
+      height: '40px',
+      border: '2px solid #e5e7eb',
+      background: 'white',
+      borderRadius: '8px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      cursor: 'pointer',
+      transition: 'all 0.3s ease',
+      fontSize: '1.2rem',
+      fontWeight: '600'
+    },
+    quantityInput: {
+      width: '60px',
+      height: '40px',
+      border: '2px solid #e5e7eb',
+      borderRadius: '8px',
+      textAlign: 'center',
+      fontSize: '1rem',
+      fontWeight: '600'
+    },
+    buttonGroup: {
+      display: 'flex',
+      gap: '15px',
+      marginBottom: '30px'
+    },
+    addToCartButton: {
+      flex: 1,
+      background: 'linear-gradient(135deg, #ec4899 0%, #be185d 100%)',
+      color: 'white',
+      border: 'none',
+      borderRadius: '12px',
+      padding: '15px 25px',
+      fontSize: '1rem',
+      fontWeight: '600',
+      cursor: 'pointer',
+      transition: 'all 0.3s ease',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '10px',
+      boxShadow: '0 8px 25px rgba(236, 72, 153, 0.3)'
+    },
+    wishlistButton: {
+      width: '50px',
+      height: '50px',
+      border: '2px solid #e5e7eb',
+      background: 'white',
+      borderRadius: '12px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      cursor: 'pointer',
+      transition: 'all 0.3s ease'
+    },
+    wishlistButtonActive: {
+      border: '2px solid #ec4899',
+      background: '#ec4899',
+      color: 'white'
+    },
+    shareButton: {
+      width: '50px',
+      height: '50px',
+      border: '2px solid #e5e7eb',
+      background: 'white',
+      borderRadius: '12px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      cursor: 'pointer',
+      transition: 'all 0.3s ease'
+    },
+    features: {
+      display: 'grid',
+      gridTemplateColumns: '1fr 1fr 1fr',
+      gap: '20px'
+    },
+    feature: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '10px',
+      padding: '15px',
+      background: '#f8fafc',
+      borderRadius: '12px'
+    },
+    featureIcon: {
+      color: '#ec4899'
+    },
+    featureText: {
+      fontSize: '0.9rem',
+      color: '#4b5563',
+      fontWeight: '500'
+    },
+    loadingContainer: {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: '60vh',
+      color: '#6b7280'
+    },
+    spinner: {
+      width: '50px',
+      height: '50px',
+      border: '4px solid #fce7f3',
+      borderTop: '4px solid #ec4899',
+      borderRadius: '50%',
+      animation: 'spin 1s linear infinite',
+      marginBottom: '20px'
+    },
+    errorContainer: {
+      textAlign: 'center',
+      padding: '60px 20px',
+      color: '#dc2626'
+    },
+    responsiveGrid: {
+      '@media (max-width: 768px)': {
+        gridTemplateColumns: '1fr'
       }
     }
-    
-    setLoading(false);
-  }, [id, product]); 
+  };
 
-  // Render loading
-  if (loading) {
-    return <div className="loading">Loading...</div>;
-  }
+  // Add CSS animations
+  const cssAnimations = `
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    @media (max-width: 768px) {
+      .product-grid {
+        grid-template-columns: 1fr !important;
+      }
+      .features-grid {
+        grid-template-columns: 1fr !important;
+      }
+    }
+  `;
 
-  // case when product is not found
-  if (!productData) {
+  useEffect(() => {
+    if (!document.querySelector('#product-animations')) {
+      const style = document.createElement('style');
+      style.id = 'product-animations';
+      style.textContent = cssAnimations;
+      document.head.appendChild(style);
+    }
+  }, []);
+
+  if (isLoading) {
     return (
-      <div className="not-found">
-        <p>Product not found</p>
-        <Link to="/" className="back-link">Back to Home</Link>
+      <div style={styles.container}>
+        <div style={styles.loadingContainer}>
+          <div style={styles.spinner}></div>
+          <p>Loading product details...</p>
+        </div>
       </div>
     );
   }
 
-  // Calculate average rating
-  const averageRating = productData.reviews 
-    ? productData.reviews.reduce((sum, review) => sum + review.rating, 0) / productData.reviews.length 
-    : 0;
-
-  
-
-  return (
-    <div className="product-detail-container">
-      <div className="product-detail-grid">
-        <div className="product-image-container">
-          <img src={productData.image} alt={productData.name} className="product-detail-image" />
-        </div>
-        
-        <div className="product-info">
-          <h1 className="product-name">{productData.name}</h1>
-          
-          <div className="product-meta">
-            <span className="views-count">Views:{JSON.parse(localStorage.getItem('productViews'))?.[productData.id] || productData.views}</span>
-            <span className="sold-count">Sold: {productData.sold || 0}</span>
-          </div>
-          
-          <div className="product-rating">
-            <div className="stars">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <span 
-                  key={star} 
-                  className={`star ${star <= Math.round(averageRating) ? 'filled' : 'empty'}`}
-                >
-                  ⭐
-                </span>
-              ))}
-            </div>
-            <span className="rating-number">
-              {averageRating.toFixed(1)} ({productData.reviews ? productData.reviews.length : 0} reviews)
-            </span>
-          </div>
-          
-          <div className="product-price">
-            <span className="price-icon"></span>
-            <span className="price-amount">{productData.price.toLocaleString()}</span>
-            ₫
-          </div>
-          
-          <button className="add-to-cart-btn" onClick={() => { addToCart(productData);showToast && showToast(); }}>
-            Add to Cart
-          </button>
+  if (error || !product) {
+    return (
+      <div style={styles.container}>
+        <div style={styles.errorContainer}>
+          <h2>Product Not Found</h2>
+          <p>{error || "The product you're looking for doesn't exist."}</p>
+          <Link 
+            to="/" 
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              marginTop: '20px',
+              padding: '10px 20px',
+              background: '#ec4899',
+              color: 'white',
+              textDecoration: 'none',
+              borderRadius: '8px'
+            }}
+          >
+            <ArrowLeft size={20} />
+            Back to Home
+          </Link>
         </div>
       </div>
-      
-      <div className="reviews-section">
-        <h2 className="reviews-title">Customer Reviews</h2>
-        
-        {productData.reviews && productData.reviews.length > 0 ? (
-          <div className="reviews-list">
-            {productData.reviews.map((review, index) => (
-              <div className="review-item" key={index}>
-                <div className="review-header">
-                  <span className="reviewer-name">{review.user}</span>
-                  <div className="review-rating">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <span 
-                        key={star} 
-                        className={`star ${star <= review.rating ? 'filled' : 'empty'}`}
-                      >
-                        ⭐
-                      </span>
-                    ))}
-                  </div>
+    );
+  }
+
+  return (
+    <div style={styles.container}>
+      {/* Hero Section */}
+      <div style={styles.heroSection}>
+        <div style={styles.heroContent}>
+          <Link 
+            to="/" 
+            style={styles.backButton}
+            onMouseEnter={(e) => {
+              e.target.style.background = 'rgba(255,255,255,0.2)';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.background = 'rgba(255,255,255,0.1)';
+            }}
+          >
+            <ArrowLeft size={20} />
+            Back to Shop
+          </Link>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div style={styles.mainContent}>
+        <div style={styles.productContainer}>
+          <div style={{...styles.productGrid}} className="product-grid">
+            {/* Image Section */}
+            <div style={styles.imageSection}>
+              <img 
+                src={product.imageUrl || '/placeholder-image.jpg'} 
+                alt={product.name}
+                style={styles.mainImage}
+                onError={(e) => {
+                  e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgdmlld0JveD0iMCAwIDQwMCA0MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iNDAwIiBmaWxsPSIjRkNFN0YzIi8+CjxwYXRoIGQ9Ik0yMDAgMTQwQzE3Mi4zOCAxNDAgMTUwIDE2Mi4zOCAxNTAgMTkwVjIxMEMxNTAgMjM3LjYyIDE3Mi4zOCAyNjAgMjAwIDI2MEMyMjcuNjIgMjYwIDI1MCAyMzcuNjIgMjUwIDIxMFYxOTBDMjUwIDE2Mi4zOCAyMjcuNjIgMTQwIDIwMCAxNDBaIiBmaWxsPSIjRUM0ODk5Ii8+CjxjaXJjbGUgY3g9IjE4MCIgY3k9IjE3NSIgcj0iOCIgZmlsbD0id2hpdGUiLz4KPGNpcmNsZSBjeD0iMjIwIiBjeT0iMTc1IiByPSI4IiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNMTgwIDIxNUMxODAgMjE1LjMgMTgwLjI4NiAyMTUgMTg1IDIxNUgyMTVDMjE5LjcxNCAyMTUgMjIwIDIxNS4zIDIyMCAyMTUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+Cjwvc3ZnPgo=';
+                }}
+              />
+            </div>
+
+            {/* Product Info Section */}
+            <div style={styles.infoSection}>
+              <div style={styles.category}>{product.category}</div>
+              <h1 style={styles.title}>{product.name}</h1>
+              
+              <div style={styles.rating}>
+                <div style={styles.stars}>
+                  {[1,2,3,4,5].map(star => (
+                    <Star 
+                      key={star} 
+                      size={16} 
+                      style={{
+                        color: '#fbbf24',
+                        fill: star <= 4 ? '#fbbf24' : 'none'
+                      }} 
+                    />
+                  ))}
                 </div>
-                <p className="review-text">{review.comment}</p>
-                <div className="review-date">{review.date}</div>
+                <span style={styles.ratingText}>(4.0) • 127 reviews</span>
               </div>
-            ))}
+
+              <div style={styles.price}>${product.price}</div>
+
+              <p style={styles.description}>
+                {product.description || "High-quality cosplay costume perfect for conventions, parties, and photo shoots. Made with premium materials for comfort and durability."}
+              </p>
+
+              {/* Stock Information */}
+              <div style={styles.stockSection}>
+                <div style={styles.stockDot}></div>
+                <span style={styles.stockText}>
+                  {product.stockQuantity > 0 
+                    ? `${product.stockQuantity} items in stock` 
+                    : 'Out of stock'
+                  }
+                </span>
+              </div>
+
+              {/* Quantity Selector */}
+              <div style={styles.quantitySection}>
+                <label style={styles.quantityLabel}>Quantity</label>
+                <div style={styles.quantityControl}>
+                  <button 
+                    style={styles.quantityButton}
+                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    onMouseEnter={(e) => {
+                      e.target.style.borderColor = '#ec4899';
+                      e.target.style.color = '#ec4899';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.borderColor = '#e5e7eb';
+                      e.target.style.color = '#374151';
+                    }}
+                  >
+                    -
+                  </button>
+                  <input 
+                    type="number"
+                    value={quantity}
+                    onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                    min="1"
+                    max={product.stockQuantity}
+                    style={styles.quantityInput}
+                  />
+                  <button 
+                    style={styles.quantityButton}
+                    onClick={() => setQuantity(Math.min(product.stockQuantity, quantity + 1))}
+                    onMouseEnter={(e) => {
+                      e.target.style.borderColor = '#ec4899';
+                      e.target.style.color = '#ec4899';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.borderColor = '#e5e7eb';
+                      e.target.style.color = '#374151';
+                    }}
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div style={styles.buttonGroup}>
+                <button 
+                  style={styles.addToCartButton}
+                  disabled={product.stockQuantity === 0}
+                  onMouseEnter={(e) => {
+                    if (product.stockQuantity > 0) {
+                      e.target.style.transform = 'translateY(-2px)';
+                      e.target.style.boxShadow = '0 12px 35px rgba(236, 72, 153, 0.4)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.transform = 'translateY(0)';
+                    e.target.style.boxShadow = '0 8px 25px rgba(236, 72, 153, 0.3)';
+                  }}
+                  onClick={() => {
+                    // Add to cart logic here
+                    console.log(`Added ${quantity} of ${product.name} to cart`);
+                  }}
+                >
+                  <ShoppingCart size={20} />
+                  {product.stockQuantity === 0 ? 'Out of Stock' : 'Add to Cart'}
+                </button>
+
+                <button 
+                  style={{
+                    ...styles.wishlistButton,
+                    ...(isLiked ? styles.wishlistButtonActive : {})
+                  }}
+                  onClick={() => setIsLiked(!isLiked)}
+                  onMouseEnter={(e) => {
+                    if (!isLiked) {
+                      e.target.style.borderColor = '#ec4899';
+                      e.target.style.color = '#ec4899';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isLiked) {
+                      e.target.style.borderColor = '#e5e7eb';
+                      e.target.style.color = '#374151';
+                    }
+                  }}
+                >
+                  <Heart 
+                    size={20} 
+                    style={{
+                      fill: isLiked ? 'currentColor' : 'none'
+                    }} 
+                  />
+                </button>
+
+                <button 
+                  style={styles.shareButton}
+                  onClick={() => {
+                    if (navigator.share) {
+                      navigator.share({
+                        title: product.name,
+                        text: `Check out this amazing cosplay: ${product.name}`,
+                        url: window.location.href
+                      });
+                    } else {
+                      navigator.clipboard.writeText(window.location.href);
+                      alert('Link copied to clipboard!');
+                    }
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.borderColor = '#ec4899';
+                    e.target.style.color = '#ec4899';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.borderColor = '#e5e7eb';
+                    e.target.style.color = '#374151';
+                  }}
+                >
+                  <Share2 size={20} />
+                </button>
+              </div>
+
+              {/* Features */}
+              <div style={{...styles.features}} className="features-grid">
+                <div style={styles.feature}>
+                  <Truck size={20} style={styles.featureIcon} />
+                  <span style={styles.featureText}>Free Shipping</span>
+                </div>
+                <div style={styles.feature}>
+                  <Shield size={20} style={styles.featureIcon} />
+                  <span style={styles.featureText}>Quality Guarantee</span>
+                </div>
+                <div style={styles.feature}>
+                  <RotateCcw size={20} style={styles.featureIcon} />
+                  <span style={styles.featureText}>Easy Returns</span>
+                </div>
+              </div>
+            </div>
           </div>
-        ) : (
-          <p className="no-reviews">No reviews yet</p>
-        )}
+        </div>
       </div>
     </div>
   );
-};
-
-export default ProductDetail;
+}
