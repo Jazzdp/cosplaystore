@@ -33,6 +33,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
+@CrossOrigin(origins = "http://localhost:5173", allowedHeaders = "*", exposedHeaders = "*")
 public class AuthController {
 private final UserRepository userRepository;
 private final PasswordEncoder passwordEncoder;
@@ -66,8 +67,13 @@ private final PasswordEncoder passwordEncoder;
             if (found.isEmpty()) {
                 return ResponseEntity.status(404).body(Map.of("error", "User not found"));
             }
-            User u = found.get();
-            return ResponseEntity.ok(Map.of("id", u.getId(), "username", u.getUsername()));
+                User u = found.get();
+                return ResponseEntity.ok(Map.of(
+                    "id", u.getId(),
+                    "username", u.getUsername(),
+                    "role", u.getRole(),
+                    "email", u.getEmail()
+                ));
         } catch (Exception e) {
             return ResponseEntity.status(401).body(Map.of("error", "Invalid token or session", "message", e.getMessage()));
         }
@@ -117,7 +123,23 @@ public ResponseEntity<?> login(@RequestBody AuthRequest request) {
         );
         
         final String jwt = jwtUtil.generateToken(userDetails);
-        return ResponseEntity.ok(new AuthResponse(jwt));
+        // include id/username/role in login response for client convenience
+        try {
+            java.util.Optional<User> found = userRepository.findByUsername(request.getUsername());
+            if (found.isPresent()) {
+                User u = found.get();
+                return ResponseEntity.ok(Map.of(
+                    "token", jwt,
+                    "id", u.getId(),
+                    "username", u.getUsername(),
+                    "role", u.getRole(),
+                    "email", u.getEmail()
+                ));
+            }
+        } catch (Exception ex) {
+            // fall back to token-only
+        }
+        return ResponseEntity.ok(Map.of("token", jwt));
         
     } catch (AuthenticationException e) {
         return ResponseEntity.status(401).body(Map.of(

@@ -5,23 +5,92 @@ const Header = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
+  // debug state removed
 
   // Check login status
   useEffect(() => {
     const token = localStorage.getItem('jwt');
     const userData = localStorage.getItem('user');
-    
-    if (token && userData) {
+
+    const setFromLocal = (ud) => {
       try {
-        setUser(JSON.parse(userData));
+        setUser(ud ? JSON.parse(ud) : null);
       } catch (e) {
         console.error('Error parsing user data:', e);
       }
+    };
+
+    // Helper to fetch /api/auth/me and return parsed user object or null
+    const fetchMe = async () => {
+      try {
+        const res = await fetch('http://localhost:8080/api/auth/me', { headers: { Authorization: `Bearer ${token}` } });
+        if (!res.ok) return null;
+  const me = await res.json();
+        return { id: me.id, username: me.username, role: me.role, email: me.email };
+      } catch (err) {
+        console.error('Failed to fetch /me', err);
+        return null;
+      }
+    };
+
+    // Main flow
+    if (token) {
+      if (!userData) {
+        (async () => {
+          const me = await fetchMe();
+          if (me) {
+            localStorage.setItem('user', JSON.stringify(me));
+            setUser(me);
+          } else {
+            setFromLocal(userData);
+          }
+        })();
+      } else {
+        try {
+          const ud = JSON.parse(userData);
+          if (!ud.role) {
+            (async () => {
+              const me = await fetchMe();
+              if (me) {
+                const merged = { ...ud, role: me.role, id: me.id, email: me.email };
+                localStorage.setItem('user', JSON.stringify(merged));
+                setUser(merged);
+              } else {
+                setUser(ud);
+              }
+            })();
+          } else {
+            setUser(ud);
+          }
+        } catch (e) {
+          console.error('Error parsing user data:', e);
+          setFromLocal(userData);
+        }
+      }
+    } else {
+      // no token: set local user if present
+      setFromLocal(userData);
     }
   }, []);
 
   const handleLogin = () => {
     window.location.href = '/login';
+  };
+
+  // Refresh profile from server using JWT and update localStorage/state
+  const refreshProfile = async () => {
+    const token = localStorage.getItem('jwt');
+    if (!token) return;
+    try {
+      const res = await fetch('http://localhost:8080/api/auth/me', { headers: { Authorization: `Bearer ${token}` } });
+      if (!res.ok) return;
+  const me = await res.json();
+      const u = { id: me.id, username: me.username, role: me.role, email: me.email };
+      localStorage.setItem('user', JSON.stringify(u));
+      setUser(u);
+    } catch (err) {
+      console.error('refreshProfile failed', err);
+    }
   };
 
   const handleRegister = () => {
@@ -221,6 +290,7 @@ const Header = () => {
 const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  // debug UI removed
 
 // Add this style object at the top of your Header component
 const mobileStyles = {
@@ -314,7 +384,7 @@ const mobileStyles = {
             
             {/* Account Button */}
             <button
-              onClick={() => setIsSidebarOpen(true)}
+              onClick={async () => { await refreshProfile(); setIsSidebarOpen(true); }}
               style={buttonStyle}
             >
               👤 {user ? user.username || 'Account' : 'Account'}
@@ -397,6 +467,8 @@ const mobileStyles = {
                 )}
               </div>
 
+              {/* debug removed */}
+
               {/* Menu Options */}
               <div style={{ marginBottom: '24px' }}>
                 <button 
@@ -421,13 +493,14 @@ const mobileStyles = {
                   ⚙️ Account Settings
                 </button>
                 
-                {user.role === 'ROLE_ADMIN' && (
+                {user.role && String(user.role).toUpperCase().includes('ADMIN') && (
                   <button 
                     style={{
                       ...menuButtonStyle,
                       background: 'linear-gradient(to right, #f3e8ff, #fce7f3)',
                       color: '#7c3aed'
                     }}
+                    onClick={() => { setIsSidebarOpen(false); window.location.href = '/admin'; }}
                   >
                     🔧 Admin Dashboard
                   </button>

@@ -36,6 +36,8 @@ function Login() {
           username: data.username || username,
         };
         if (data.id) userObj.id = data.id;
+        if (data.role) userObj.role = data.role;
+        if (data.email) userObj.email = data.email;
 
         localStorage.setItem('user', JSON.stringify(userObj));
 

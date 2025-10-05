@@ -37,31 +37,22 @@ const Footer = () => {
                     <Column>
                         <Heading>Services</Heading>
                         <FooterLink href="#">
-                            Writing
+                            Afiiliate Program
                         </FooterLink>
                         <FooterLink href="#">
-                            Internships
-                        </FooterLink>
-                        <FooterLink href="#">
-                            Coding
-                        </FooterLink>
-                        <FooterLink href="#">
-                            Teaching
+                            Become a seller 
                         </FooterLink>
                     </Column>
                     <Column>
-                        <Heading>Contact Us</Heading>
+                        <Heading>Stores</Heading>
                         <FooterLink href="#">
-                            Uttar Pradesh
+                            Algiers 
                         </FooterLink>
                         <FooterLink href="#">
-                            Ahemdabad
+                            Annaba 
                         </FooterLink>
                         <FooterLink href="#">
-                            Indore
-                        </FooterLink>
-                        <FooterLink href="#">
-                            Mumbai
+                            Oran
                         </FooterLink>
                     </Column>
                     <Column>

@@ -267,21 +267,10 @@ export default function ItemCard({ product, showToast }) {
             >
               <ShoppingCart size={20} style={{color: '#ec4899'}} />
             </button>
-            <button 
-              style={styles.actionButton}
-              onMouseEnter={(e) => Object.assign(e.target.style, styles.actionButtonHover)}
-              onMouseLeave={(e) => {
-                e.target.style.background = 'rgba(255,255,255,0.9)';
-                e.target.style.transform = 'scale(1)';
-              }}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                // Quick view logic here
-              }}
-            >
-              <Eye size={20} style={{color: '#ec4899'}} />
-            </button>
+            
+            
+             
+          
           </div>
 
           {/* Price Badge */}
