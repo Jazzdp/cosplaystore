@@ -14,6 +14,7 @@ import Login from "./components/Login";
 import Register from './pages/Register';
 import './App.css'
 import './index.css';
+import AdminDashboard from './pages/AdminDashboard';
 import SearchBar from './components/SearchBar';
 import Footer from "./components/footer";
 
@@ -43,6 +44,7 @@ function App() {
           <Route path="/category/:category" element={<Category  showToast={handleAddToCartToast}/>} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/admin" element={<AdminDashboard />} />
          </Routes>
 
          <ToastContainer
