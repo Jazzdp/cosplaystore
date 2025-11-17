@@ -17,6 +17,7 @@ import './index.css';
 import SearchBar from './components/SearchBar';
 import Footer from "./components/footer";
 import AdminDashboard from './pages/AdminDashboard';
+import OrdersPage from './pages/Orders';
 
 
 function App() {
@@ -58,6 +59,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/orders" element={<OrdersPage />} />
          </Routes>
 
          <ToastContainer

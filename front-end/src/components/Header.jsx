@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import SearchOverlay from './SearchOverlay';
 
 const Header = () => {
@@ -76,6 +77,8 @@ const Header = () => {
   const handleLogin = () => {
     window.location.href = '/login';
   };
+
+  const navigate = useNavigate();
 
   // Refresh profile from server using JWT and update localStorage/state
   const refreshProfile = async () => {
@@ -475,6 +478,7 @@ const mobileStyles = {
                   style={menuButtonStyle}
                   onMouseOver={(e) => e.target.style.backgroundColor = '#fef7f7'}
                   onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}
+                  onClick={() => { setIsSidebarOpen(false); navigate('/orders'); }}
                 >
                   📦 My Orders
                 </button>

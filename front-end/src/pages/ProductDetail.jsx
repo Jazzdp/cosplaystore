@@ -422,21 +422,7 @@ export default function ProductDetail() {
               <div style={styles.category}>{product.category}</div>
               <h1 style={styles.title}>{product.name}</h1>
               
-              <div style={styles.rating}>
-                <div style={styles.stars}>
-                  {[1,2,3,4,5].map(star => (
-                    <Star 
-                      key={star} 
-                      size={16} 
-                      style={{
-                        color: '#fbbf24',
-                        fill: star <= 4 ? '#fbbf24' : 'none'
-                      }} 
-                    />
-                  ))}
-                </div>
-                <span style={styles.ratingText}>(4.0) • 127 reviews</span>
-              </div>
+             
 
               <div style={styles.price}>${product.price}</div>
 

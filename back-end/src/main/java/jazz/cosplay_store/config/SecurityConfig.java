@@ -47,16 +47,24 @@ public class SecurityConfig {
     }
 
    
-@Bean
+    @Bean
 public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     http.csrf(csrf -> csrf.disable())
         .cors(cors -> cors.configurationSource(corsConfigurationSource()))
         .authorizeHttpRequests(auth -> auth
             .requestMatchers("/api/auth/**").permitAll()
             .requestMatchers("/products/**").permitAll()
+            .requestMatchers("/products").permitAll()
             .requestMatchers("/").permitAll()
             .requestMatchers("/status").permitAll()
+            .requestMatchers("/admin/**").hasRole("ADMIN")
+            .requestMatchers("/users", "/users/**").hasRole("ADMIN")
+            .requestMatchers("/orders").hasRole("ADMIN")
+            .requestMatchers("/orders/{id}").hasRole("ADMIN")
+            .requestMatchers("/orders/me").authenticated()
+            .requestMatchers("POST", "/orders").authenticated()
             .anyRequest().authenticated()
+           
         );
 
     http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
@@ -71,6 +79,7 @@ public CorsConfigurationSource corsConfigurationSource() {
     configuration.addAllowedMethod("*"); // Allow all HTTP methods
     configuration.addAllowedHeader("*"); // Allow all headers
     configuration.setAllowCredentials(true);
+
     
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
     source.registerCorsConfiguration("/**", configuration);
