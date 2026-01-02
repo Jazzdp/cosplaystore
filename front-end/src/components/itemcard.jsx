@@ -186,6 +186,28 @@ export default function ItemCard({ product, showToast }) {
   const [isHovered, setIsHovered] = React.useState(false);
   const [isLiked, setIsLiked] = React.useState(false);
   const [imageOverlayHovered, setImageOverlayHovered] = React.useState(false);
+  const [loadingWishlist, setLoadingWishlist] = React.useState(false);
+
+  React.useEffect(() => {
+    // Check if product is in wishlist on mount
+    const checkWishlist = async () => {
+      const token = localStorage.getItem('jwt');
+      if (!token) return;
+      try {
+        const res = await fetch(`http://localhost:8080/api/wishlist/check/${product.id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const text = await res.text();
+          const isInWishlist = text === 'true';
+          setIsLiked(isInWishlist);
+        }
+      } catch (err) {
+        console.error('Error checking wishlist:', err);
+      }
+    };
+    checkWishlist();
+  }, [product.id]);
 
   const getStockStatus = (stockQuantity) => {
     if (stockQuantity === 0) return { text: 'Out of Stock', color: styles.stockDotOut };
@@ -284,11 +306,37 @@ export default function ItemCard({ product, showToast }) {
               ...styles.heartButton,
               ...(isLiked ? styles.heartButtonActive : {})
             }}
-            onClick={(e) => {
+            onClick={async (e) => {
               e.preventDefault();
               e.stopPropagation();
-              setIsLiked(!isLiked);
+              const token = localStorage.getItem('jwt');
+              console.debug('itemcard wishlist toggle, jwt present:', !!token, 'productId:', product.id);
+              if (!token) {
+                window.location.href = '/login';
+                return;
+              }
+              setLoadingWishlist(true);
+              try {
+                // Use toggle endpoint to avoid DELETE/CORS issues
+                const res = await fetch(`http://localhost:8080/api/wishlist/toggle/${product.id}`, {
+                  method: 'POST',
+                  headers: { Authorization: `Bearer ${token}` }
+                });
+                if (res.ok) {
+                  const body = await res.json().catch(() => ({}));
+                  if (body.status === 'removed') setIsLiked(false);
+                  else if (body.status === 'added') setIsLiked(true);
+                  else setIsLiked(!isLiked);
+                } else {
+                  console.warn('Wishlist toggle failed', res.status);
+                }
+              } catch (err) {
+                console.error('Error updating wishlist:', err);
+              } finally {
+                setLoadingWishlist(false);
+              }
             }}
+            disabled={loadingWishlist}
           >
             <Heart 
               size={18} 

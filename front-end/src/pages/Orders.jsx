@@ -19,8 +19,8 @@ export default function OrdersPage() {
     setError(null);
     const load = async () => {
       try {
-        // Use /orders/me for authenticated users to fetch only their own orders
-        const res = await fetchWithAuth('http://localhost:8080/orders/me');
+        // Use /api/orders/me for authenticated users to fetch only their own orders
+        const res = await fetchWithAuth('http://localhost:8080/api/orders/me');
         if (!res.ok) throw new Error(`Failed to load orders (${res.status})`);
         const data = await res.json();
         if (!mounted) return;
@@ -80,31 +80,38 @@ export default function OrdersPage() {
 
           {!loading && !error && orders.length > 0 && (
             <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-pink-50 border-b border-pink-100">
+              <style>{`
+                @media (max-width: 768px) {
+                  table { font-size: 0.875rem; }
+                  th, td { padding: 12px 4px !important; }
+                  th { font-size: 0.7rem; }
+                }
+              `}</style>
+              <table className="w-full border-collapse">
+                <thead className="bg-gradient-to-r from-pink-100 to-pink-50 border-b-2 border-pink-200">
                   <tr>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Order ID</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Product</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Qty</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Date Placed</th>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-pink-900 uppercase tracking-widest">Order ID</th>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-pink-900 uppercase tracking-widest">Product</th>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-pink-900 uppercase tracking-widest">Qty</th>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-pink-900 uppercase tracking-widest">Status</th>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-pink-900 uppercase tracking-widest">Date</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {orders.map(o => (
-                    <tr key={o.id} className="hover:bg-pink-50 transition-colors">
-                      <td className="px-6 py-4 font-semibold text-gray-800">#{o.id}</td>
-                      <td className="px-6 py-4 text-gray-700">{o.product?.name || `Product #${o.product?.id}`}</td>
-                      <td className="px-6 py-4 text-gray-700">{o.quantity}</td>
+                <tbody className="divide-y divide-pink-100">
+                  {orders.map((o, idx) => (
+                    <tr key={o.id} className={`transition-all duration-200 ${idx % 2 === 0 ? 'bg-white' : 'bg-pink-50'} hover:bg-pink-100`}>
+                      <td className="px-6 py-4 font-bold text-pink-600">#{o.id}</td>
+                      <td className="px-6 py-4 text-gray-800 font-medium">{o.product?.name || `Product #${o.product?.id}`}</td>
+                      <td className="px-6 py-4 text-gray-700 font-semibold text-center">{o.quantity}</td>
                       <td className="px-6 py-4">
                         <span
-                          className="px-3 py-1 rounded-full text-sm font-medium"
+                          className="px-3 py-1 rounded-full text-xs font-bold inline-block"
                           style={getStatusStyle(o.status)}
                         >
                           {o.status}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-gray-600 text-sm">{new Date(o.createdAt).toLocaleDateString()}</td>
+                      <td className="px-6 py-4 text-gray-600 text-sm">{new Date(o.createdAt).toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'})}</td>
                     </tr>
                   ))}
                 </tbody>

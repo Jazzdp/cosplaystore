@@ -33,7 +33,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "http://localhost:5173", allowedHeaders = "*", exposedHeaders = "*")
+@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:3000"}, allowedHeaders = "*", exposedHeaders = "*")
 public class AuthController {
 private final UserRepository userRepository;
 private final PasswordEncoder passwordEncoder;
@@ -76,6 +76,48 @@ private final PasswordEncoder passwordEncoder;
                 ));
         } catch (Exception e) {
             return ResponseEntity.status(401).body(Map.of("error", "Invalid token or session", "message", e.getMessage()));
+        }
+    }
+
+    @PutMapping("/me")
+    public ResponseEntity<?> updateMe(@RequestHeader(value = "Authorization", required = false) String authHeader,
+                                      @RequestBody Map<String, Object> payload) {
+        try {
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                return ResponseEntity.status(401).body(Map.of("error", "Missing or invalid Authorization header"));
+            }
+            String token = authHeader.substring(7);
+            String username = jwtUtil.extractUsername(token);
+            if (username == null) {
+                return ResponseEntity.status(401).body(Map.of("error", "Invalid token"));
+            }
+            java.util.Optional<User> found = userRepository.findByUsername(username);
+            if (found.isEmpty()) {
+                return ResponseEntity.status(404).body(Map.of("error", "User not found"));
+            }
+
+            User u = found.get();
+            // Only allow updating limited fields
+            if (payload.containsKey("email")) u.setEmail(String.valueOf(payload.get("email")));
+            if (payload.containsKey("fullName")) u.setFullName(String.valueOf(payload.get("fullName")));
+            if (payload.containsKey("password")) {
+                String raw = String.valueOf(payload.get("password"));
+                if (raw != null && !raw.isBlank()) {
+                    u.setPassword(passwordEncoder.encode(raw));
+                }
+            }
+
+            User saved = userRepository.save(u);
+            return ResponseEntity.ok(Map.of(
+                    "id", saved.getId(),
+                    "username", saved.getUsername(),
+                    "role", saved.getRole(),
+                    "email", saved.getEmail(),
+                    "fullName", saved.getFullName()
+            ));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", "Failed to update profile", "message", e.getMessage()));
         }
     }
 

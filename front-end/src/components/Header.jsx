@@ -379,7 +379,7 @@ const mobileStyles = {
     padding: '16px'
   }}>
     <a href="/" style={{...linkStyle, display: 'block', padding: '12px 0'}}>Home</a>
-    <a href="/prodcuts" style={{...linkStyle, display: 'block', padding: '12px 0'}}>Products</a>
+    <a href="/Products" style={{...linkStyle, display: 'block', padding: '12px 0'}}>Products</a>
     
     <a href="cart" style={{...linkStyle, display: 'block', padding: '12px 0'}}>Your Cart</a>
   </div>
@@ -486,6 +486,7 @@ const mobileStyles = {
                   style={menuButtonStyle}
                   onMouseOver={(e) => e.target.style.backgroundColor = '#fef7f7'}
                   onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}
+                  onClick={() => { setIsSidebarOpen(false); navigate('/wishlist'); }}
                 >
                   ❤️ Wishlist
                 </button>
@@ -493,6 +494,7 @@ const mobileStyles = {
                   style={menuButtonStyle}
                   onMouseOver={(e) => e.target.style.backgroundColor = '#fef7f7'}
                   onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}
+                  onClick={() => { setIsSidebarOpen(false); navigate('/account-settings'); }}
                 >
                   ⚙️ Account Settings
                 </button>

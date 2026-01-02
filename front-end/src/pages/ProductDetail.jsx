@@ -12,6 +12,7 @@ export default function ProductDetail() {
   const [quantity, setQuantity] = useState(1);
   const [isLiked, setIsLiked] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [loadingWishlist, setLoadingWishlist] = useState(false);
   const { addToCart } = useCart();
 
   useEffect(() => {
@@ -32,6 +33,24 @@ export default function ProductDetail() {
         setError(err.message);
         setIsLoading(false);
       });
+  }, [id]);
+
+  // Check if product is in wishlist on mount
+  useEffect(() => {
+    const token = localStorage.getItem('jwt');
+    if (!token || !id) return;
+    try {
+      fetch(`http://localhost:8080/api/wishlist/check/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+        .then(res => res.ok ? res.text() : null)
+        .then(text => {
+          if (text !== null) setIsLiked(text === 'true');
+        })
+        .catch(err => console.error('Error checking wishlist:', err));
+    } catch (err) {
+      console.error('Error checking wishlist:', err);
+    }
   }, [id]);
 
   const styles = {
@@ -518,7 +537,37 @@ export default function ProductDetail() {
                     ...styles.wishlistButton,
                     ...(isLiked ? styles.wishlistButtonActive : {})
                   }}
-                  onClick={() => setIsLiked(!isLiked)}
+                  onClick={async (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const token = localStorage.getItem('jwt');
+                    if (!token) {
+                      window.location.href = '/login';
+                      return;
+                    }
+                    setLoadingWishlist(true);
+                    try {
+                      if (isLiked) {
+                        // Remove from wishlist
+                        await fetch(`http://localhost:8080/api/wishlist/remove/${id}`, {
+                          method: 'DELETE',
+                          headers: { Authorization: `Bearer ${token}` }
+                        });
+                      } else {
+                        // Add to wishlist
+                        await fetch(`http://localhost:8080/api/wishlist/add/${id}`, {
+                          method: 'POST',
+                          headers: { Authorization: `Bearer ${token}` }
+                        });
+                      }
+                      setIsLiked(!isLiked);
+                    } catch (err) {
+                      console.error('Error updating wishlist:', err);
+                    } finally {
+                      setLoadingWishlist(false);
+                    }
+                  }}
+                  disabled={loadingWishlist}
                   onMouseEnter={(e) => {
                     if (!isLiked) {
                       e.target.style.borderColor = '#ec4899';

@@ -18,6 +18,8 @@ import SearchBar from './components/SearchBar';
 import Footer from "./components/footer";
 import AdminDashboard from './pages/AdminDashboard';
 import OrdersPage from './pages/Orders';
+import Wishlist from './pages/Wishlist';
+import AccountSettings from './pages/AccountSettings';
 
 
 function App() {
@@ -60,6 +62,8 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/orders" element={<OrdersPage />} />
+          <Route path="/wishlist" element={<Wishlist />} />
+          <Route path="/account-settings" element={<AccountSettings />} />
          </Routes>
 
          <ToastContainer

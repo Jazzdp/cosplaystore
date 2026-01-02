@@ -507,95 +507,109 @@ function Cart() {
       {/* Main Content */}
       <div style={styles.mainContent}>
         <div style={styles.cartContainer}>
-          <div style={styles.cartGrid} className="cart-grid">
+          <style>{`
+            @media (max-width: 768px) {
+              .cart-grid {
+                grid-template-columns: 1fr !important;
+                gap: 20px !important;
+              }
+            }
+          `}</style>
+          <div style={{...styles.cartGrid, gridTemplateColumns: 'auto 1fr'}} className="cart-grid">
             {/* Cart Items */}
-            <div style={styles.cartItems}>
-              {cartItems.map((item) => {
-                const product = productDetails[item.id];
-                
-                if (!product) {
+            <div style={{...styles.cartItems, gridColumn: '1 / -1'}}>
+              {cartItems.length === 0 ? (
+                <div style={{textAlign: 'center', color: '#6b7280', padding: '40px 20px'}}>
+                  No products in cart
+                </div>
+              ) : (
+                cartItems.map((item) => {
+                  const product = productDetails[item.id];
+                  
+                  if (!product) {
+                    return (
+                      <div key={item.id} style={styles.cartItem}>
+                        <div style={{textAlign: 'center', width: '100%', color: '#6b7280'}}>
+                          Product not found
+                        </div>
+                      </div>
+                    );
+                  }
+
                   return (
                     <div key={item.id} style={styles.cartItem}>
-                      <div style={{textAlign: 'center', width: '100%', color: '#6b7280'}}>
-                        Product not found
+                      <img 
+                        src={product.imageUrl || '/placeholder-image.jpg'} 
+                        alt={product.name}
+                        style={styles.cartItemImage}
+                        onError={(e) => {
+                          e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgdmlld0JveD0iMCAwIDEyMCAxMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMjAiIGhlaWdodD0iMTIwIiBmaWxsPSIjRkNFN0YzIi8+CjxwYXRoIGQ9Ik02MCA0MEM0NC41MzYgNDAgMzIgNTIuNTM2IDMyIDY4VjkyQzMyIDEwNy40NjQgNDQuNTM2IDEyMCA2MCAxMjBDNzUuNDY0IDEyMCA4OCAxMDcuNDY0IDg4IDkyVjY4Qzg4IDUyLjUzNiA3NS40NjQgNDAgNjAgNDBaIiBmaWxsPSIjRUM0ODk5Ii8+CjxjaXJjbGUgY3g9IjU0IiBjeT0iNjUiIHI9IjMiIGZpbGw9IndoaXRlIi8+CjxjaXJjbGUgY3g9IjY2IiBjeT0iNjUiIHI9IjMiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik01NCA4NUM1NCA4NS4yIDU0LjE5MSA4NSA1OCA4NUg2MkM2NS44MDkgODUgNjYgODUuMiA2NiA4NSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIxIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPC9zdmc+Cg==';
+                        }}
+                      />
+                      
+                      <div style={styles.cartItemInfo}>
+                        <h3 style={styles.cartItemName}>{product.name}</h3>
+                        <div style={styles.cartItemCategory}>{product.category}</div>
+                        <div style={styles.cartItemPrice}>${formatMoney(product.price)}</div>
+                        
+                          <div style={styles.cartItemActions}>
+                          <div style={styles.quantityControl}>
+                            <button 
+                              type="button"
+                              style={styles.quantityButton}
+                              onClick={() => handleQuantityChange(item.id, -1)}
+                              onMouseEnter={(e) => {
+                                e.target.style.background = '#be185d';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.target.style.background = '#ec4899';
+                              }}
+                            >
+                              <Minus size={16} />
+                            </button>
+                            <span style={styles.quantityValue}>{item.quantity}</span>
+                            <button 
+                              type="button"
+                              style={styles.quantityButton}
+                              onClick={() => handleQuantityChange(item.id, 1)}
+                              onMouseEnter={(e) => {
+                                e.target.style.background = '#be185d';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.target.style.background = '#ec4899';
+                              }}
+                            >
+                              <Plus size={16} />
+                            </button>
+                          </div>
+                          <div style={{marginTop: '8px', color: '#6b7280', fontWeight: '600'}}>
+                            Item total: ${formatMoney(calculateItemTotal(item))}
+                          </div>
+                          
+                          <button 
+                            type="button"
+                            style={styles.removeButton}
+                            onClick={() => removeFromCart(item.id)}
+                            onMouseEnter={(e) => {
+                              e.target.style.background = '#fef2f2';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.target.style.background = 'none';
+                            }}
+                            title="Remove from cart"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   );
-                }
-
-                return (
-                  <div key={item.id} style={styles.cartItem}>
-                    <img 
-                      src={product.imageUrl || '/placeholder-image.jpg'} 
-                      alt={product.name}
-                      style={styles.cartItemImage}
-                      onError={(e) => {
-                        e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgdmlld0JveD0iMCAwIDEyMCAxMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMjAiIGhlaWdodD0iMTIwIiBmaWxsPSIjRkNFN0YzIi8+CjxwYXRoIGQ9Ik02MCA0MEM0NC41MzYgNDAgMzIgNTIuNTM2IDMyIDY4VjkyQzMyIDEwNy40NjQgNDQuNTM2IDEyMCA2MCAxMjBDNzUuNDY0IDEyMCA4OCAxMDcuNDY0IDg4IDkyVjY4Qzg4IDUyLjUzNiA3NS40NjQgNDAgNjAgNDBaIiBmaWxsPSIjRUM0ODk5Ii8+CjxjaXJjbGUgY3g9IjU0IiBjeT0iNjUiIHI9IjMiIGZpbGw9IndoaXRlIi8+CjxjaXJjbGUgY3g9IjY2IiBjeT0iNjUiIHI9IjMiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik01NCA4NUM1NCA4NS4yIDU0LjE5MSA4NSA1OCA4NUg2MkM2NS44MDkgODUgNjYgODUuMiA2NiA4NSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIxIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPC9zdmc+Cg==';
-                      }}
-                    />
-                    
-                    <div style={styles.cartItemInfo}>
-                      <h3 style={styles.cartItemName}>{product.name}</h3>
-                      <div style={styles.cartItemCategory}>{product.category}</div>
-                      <div style={styles.cartItemPrice}>${formatMoney(product.price)}</div>
-                      
-                        <div style={styles.cartItemActions}>
-                        <div style={styles.quantityControl}>
-                          <button 
-                            type="button"
-                            style={styles.quantityButton}
-                            onClick={() => handleQuantityChange(item.id, -1)}
-                            onMouseEnter={(e) => {
-                              e.target.style.background = '#be185d';
-                            }}
-                            onMouseLeave={(e) => {
-                              e.target.style.background = '#ec4899';
-                            }}
-                          >
-                            <Minus size={16} />
-                          </button>
-                          <span style={styles.quantityValue}>{item.quantity}</span>
-                          <button 
-                            type="button"
-                            style={styles.quantityButton}
-                            onClick={() => handleQuantityChange(item.id, 1)}
-                            onMouseEnter={(e) => {
-                              e.target.style.background = '#be185d';
-                            }}
-                            onMouseLeave={(e) => {
-                              e.target.style.background = '#ec4899';
-                            }}
-                          >
-                            <Plus size={16} />
-                          </button>
-                        </div>
-                        <div style={{marginTop: '8px', color: '#6b7280', fontWeight: '600'}}>
-                          Item total: ${formatMoney(calculateItemTotal(item))}
-                        </div>
-                        
-                        <button 
-                          type="button"
-                          style={styles.removeButton}
-                          onClick={() => removeFromCart(item.id)}
-                          onMouseEnter={(e) => {
-                            e.target.style.background = '#fef2f2';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.target.style.background = 'none';
-                          }}
-                          title="Remove from cart"
-                        >
-                          <Trash2 size={18} />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+                })
+              )}
             </div>
             
             {/* Cart Summary */}
-            <div style={styles.summary}>
+            <div style={{...styles.summary, gridColumn: '1 / -1'}}>
               <h2 style={styles.summaryTitle}>Order Summary</h2>
               
               <div style={styles.summaryRow}>

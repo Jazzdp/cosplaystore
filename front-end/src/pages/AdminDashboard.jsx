@@ -463,8 +463,8 @@ export default function AdminDashboard() {
     try {
       const [pRes, uRes, oRes] = await Promise.all([
         fetchWithAuth(`${API_URL}/products`).catch(err => { console.error('Products error:', err); return null; }),
-        fetchWithAuth(`${API_URL}/users`).catch(err => { console.error('Users error:', err); return null; }),
-        fetchWithAuth(`${API_URL}/orders`).catch(err => { console.error('Orders error:', err); return null; })
+        fetchWithAuth(`${API_URL}/api/users`).catch(err => { console.error('Users error:', err); return null; }),
+        fetchWithAuth(`${API_URL}/api/orders`).catch(err => { console.error('Orders error:', err); return null; })
       ]);
 
       console.log('Orders response:', oRes);
@@ -795,8 +795,7 @@ export default function AdminDashboard() {
                     <tr>
                       <th>Name</th>
                       <th>Email</th>
-                      <th>Joined</th>
-                      <th>Orders</th>
+                      <th>Role</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -804,8 +803,7 @@ export default function AdminDashboard() {
                       <tr key={u.id}>
                         <td style={{fontWeight: 600}}>{u.fullName || u.username}</td>
                         <td>{u.email}</td>
-                        <td>{u.createdAt ? new Date(u.createdAt).toLocaleDateString() : 'N/A'}</td>
-                        <td><span className="badge primary">0</span></td>
+                        <td><span className="badge info">{u.role}</span></td>
                       </tr>
                     ))}
                   </tbody>
@@ -818,7 +816,7 @@ export default function AdminDashboard() {
             <div style={{overflowX: 'auto'}}>
               {orders.length === 0 ? (
                 <div style={{textAlign: 'center', padding: '2rem', color: '#64748b'}}>
-                  <p>⚠️ Unable to load orders - Admin permissions required</p>
+                  <p>⚠️ No orders found</p>
                 </div>
               ) : (
                 <table>
@@ -827,6 +825,7 @@ export default function AdminDashboard() {
                       <th>Order ID</th>
                       <th>Customer</th>
                       <th>Product</th>
+                      <th>Qty</th>
                       <th>Total</th>
                       <th>Status</th>
                       <th>Date</th>
@@ -838,6 +837,7 @@ export default function AdminDashboard() {
                         <td style={{fontWeight: 'bold'}}>#{o.id}</td>
                         <td>{o.user?.fullName || o.user?.username || 'N/A'}</td>
                         <td>{o.product?.name || 'N/A'}</td>
+                        <td>{o.quantity}</td>
                         <td style={{fontWeight: 'bold'}}>${(o.quantity * (o.product?.price || 0)).toFixed(2)}</td>
                         <td><span className={`badge ${getStatusColor(o.status)}`}>{o.status}</span></td>
                         <td>{o.createdAt ? new Date(o.createdAt).toLocaleDateString() : 'N/A'}</td>

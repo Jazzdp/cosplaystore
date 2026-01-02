@@ -17,6 +17,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.http.HttpMethod;
 
 
 @Configuration
@@ -46,25 +47,32 @@ public class SecurityConfig {
         return config.getAuthenticationManager();
     }
 
-   
     @Bean
 public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     http.csrf(csrf -> csrf.disable())
         .cors(cors -> cors.configurationSource(corsConfigurationSource()))
         .authorizeHttpRequests(auth -> auth
+            // Public endpoints
             .requestMatchers("/api/auth/**").permitAll()
-            .requestMatchers("/products/**").permitAll()
-            .requestMatchers("/products").permitAll()
-            .requestMatchers("/").permitAll()
-            .requestMatchers("/status").permitAll()
+            .requestMatchers("/products", "/products/**").permitAll()
+            .requestMatchers("/", "/status", "/index.html").permitAll()
+            // Static assets (frontend build files) - simplified to avoid complex patterns
+            // Permit common static resource paths; avoid PathPattern double-wildcard issues
+            .requestMatchers("/static/**", "/public/**", "/webjars/**").permitAll()
+            
+            // Authenticated endpoints - allow both users and admins
+            .requestMatchers("/api/wishlist/**").authenticated()
+            .requestMatchers(HttpMethod.GET, "/api/orders/me").authenticated()
+            .requestMatchers(HttpMethod.POST, "/api/orders").authenticated()
+            
+            // Admin-only endpoints for managing all orders
+            .requestMatchers(HttpMethod.GET, "/api/orders").hasRole("ADMIN")
+            .requestMatchers(HttpMethod.GET, "/api/users", "/api/users/**").hasRole("ADMIN")
+            .requestMatchers(HttpMethod.DELETE, "/api/orders/{id}").hasRole("ADMIN")
             .requestMatchers("/admin/**").hasRole("ADMIN")
-            .requestMatchers("/users", "/users/**").hasRole("ADMIN")
-            .requestMatchers("/orders").hasRole("ADMIN")
-            .requestMatchers("/orders/{id}").hasRole("ADMIN")
-            .requestMatchers("/orders/me").authenticated()
-            .requestMatchers("POST", "/orders").authenticated()
+            
+            // Everything else requires authentication
             .anyRequest().authenticated()
-           
         );
 
     http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
@@ -75,7 +83,8 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
 public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
-    configuration.addAllowedOrigin("http://localhost:3000"); // Your React app
+    configuration.addAllowedOrigin("http://localhost:3000"); // React dev (CRA)
+    configuration.addAllowedOrigin("http://localhost:5173"); // Vite dev
     configuration.addAllowedMethod("*"); // Allow all HTTP methods
     configuration.addAllowedHeader("*"); // Allow all headers
     configuration.setAllowCredentials(true);

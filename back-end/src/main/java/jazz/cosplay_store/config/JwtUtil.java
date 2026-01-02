@@ -30,12 +30,17 @@ public class JwtUtil {
 
     // Generic claim extractor
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
-        Claims claims = Jwts.parser()
-                .verifyWith(secretKey)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
-        return claimsResolver.apply(claims);
+        try {
+            Claims claims = Jwts.parser()
+                    .verifyWith(secretKey)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+            return claimsResolver.apply(claims);
+        } catch (Exception e) {
+            // Malformed/expired/invalid token — return null to let caller handle absence
+            return null;
+        }
     }
 
     // Generate token with role
@@ -57,11 +62,14 @@ public class JwtUtil {
     // Validate with UserDetails
     public boolean validateToken(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
+        if (username == null) return false;
         return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
     }
 
     private boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
+        Date expiration = extractExpiration(token);
+        if (expiration == null) return true;  // Treat null (invalid token) as expired
+        return expiration.before(new Date());
     }
 
     private Date extractExpiration(String token) {
