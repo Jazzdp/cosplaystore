@@ -6,21 +6,18 @@ import jakarta.validation.constraints.Size;
 
 public class UserRequestDTO {
 
-    @NotBlank(message = "Username is required")
     private String username;
 
-    @NotBlank(message = "Password is required")
-    @Size(min = 6, message = "Password must be at least 6 characters long")
     private String password;
 
-    @NotBlank(message = "Role is required")
     private String role;
 
     @Email(message = "Invalid email format")
     private String email;
 
-    @NotBlank(message = "Full name is required")
     private String fullName;
+
+    private Integer phone;
 
     // --- Getters & Setters ---
     public String getUsername() {
@@ -62,4 +59,11 @@ public class UserRequestDTO {
     public void setFullName(String fullName) {
         this.fullName = fullName;
     }
+    public Integer getPhone() {
+        return phone;
+    }
+    public void setPhone(Integer phone) {
+        this.phone = phone;
+    }
+    
 }

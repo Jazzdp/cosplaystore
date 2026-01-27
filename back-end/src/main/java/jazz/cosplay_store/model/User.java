@@ -20,15 +20,18 @@ public class User {
 
     private String fullName;
 
+    private Integer phone;
+  
     // --- Constructors ---
     public User() {}
 
-    public User(String username, String password, String role, String email, String fullName) {
+    public User(String username, String password, String role, String email, String fullName, Integer phone) {
         this.username = username;
         this.password = password;
         this.role = role;
         this.email = email;
         this.fullName = fullName;
+        this.phone = phone;
     }
 
     // --- Getters & Setters ---
@@ -78,5 +81,11 @@ public class User {
 
     public void setFullName(String fullName) {
         this.fullName = fullName;
+    }
+    public Integer getPhone() {
+        return phone;
+    }
+    public void setPhone(Integer phone) {
+        this.phone = phone;
     }
 }

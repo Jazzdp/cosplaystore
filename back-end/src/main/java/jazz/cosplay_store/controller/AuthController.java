@@ -72,7 +72,9 @@ private final PasswordEncoder passwordEncoder;
                     "id", u.getId(),
                     "username", u.getUsername(),
                     "role", u.getRole(),
-                    "email", u.getEmail()
+                    "email", u.getEmail(),
+                    "phone", u.getPhone(),
+                    "fullName", u.getFullName()
                 ));
         } catch (Exception e) {
             return ResponseEntity.status(401).body(Map.of("error", "Invalid token or session", "message", e.getMessage()));
@@ -100,6 +102,13 @@ private final PasswordEncoder passwordEncoder;
             // Only allow updating limited fields
             if (payload.containsKey("email")) u.setEmail(String.valueOf(payload.get("email")));
             if (payload.containsKey("fullName")) u.setFullName(String.valueOf(payload.get("fullName")));
+            if (payload.containsKey("phone")) {
+                try {
+                    u.setPhone(Integer.parseInt(String.valueOf(payload.get("phone"))));
+                } catch (NumberFormatException nfe) {
+                    return ResponseEntity.badRequest().body(Map.of("error", "Invalid phone number format"));
+                }
+            }
             if (payload.containsKey("password")) {
                 String raw = String.valueOf(payload.get("password"));
                 if (raw != null && !raw.isBlank()) {
@@ -113,7 +122,8 @@ private final PasswordEncoder passwordEncoder;
                     "username", saved.getUsername(),
                     "role", saved.getRole(),
                     "email", saved.getEmail(),
-                    "fullName", saved.getFullName()
+                    "fullName", saved.getFullName(),
+                    "phone", saved.getPhone()
             ));
 
         } catch (Exception e) {
@@ -123,30 +133,7 @@ private final PasswordEncoder passwordEncoder;
 
     
 
-     /*@PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody AuthRequest request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
-        );
-        final UserDetails userDetails = userDetailsService.loadUserByUsername(request.getUsername());
-        final String jwt = jwtUtil.generateToken(userDetails);
-        // Try to find the full user object to include id/username in response
-        try {
-            java.util.Optional<User> found = userRepository.findByUsername(request.getUsername());
-            if (found.isPresent()) {
-                User u = found.get();
-                return ResponseEntity.ok(Map.of(
-                    "token", jwt,
-                    "id", u.getId(),
-                    "username", u.getUsername()
-                ));
-            }
-        } catch (Exception ex) {
-            // If anything goes wrong, fall back to only returning the token
-        }
-        return ResponseEntity.ok(Map.of("token", jwt));
-        
-    } */
+   
    @PostMapping("/login")
 public ResponseEntity<?> login(@RequestBody AuthRequest request) {
     try {
@@ -175,7 +162,9 @@ public ResponseEntity<?> login(@RequestBody AuthRequest request) {
                     "id", u.getId(),
                     "username", u.getUsername(),
                     "role", u.getRole(),
-                    "email", u.getEmail()
+                    "email", u.getEmail(),
+                    "phone", u.getPhone(),
+                    "fullName", u.getFullName()
                 ));
             }
         } catch (Exception ex) {

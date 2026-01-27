@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 public class JwtUtil {
 
     private final SecretKey secretKey = Keys.hmacShaKeyFor("3cfa76ef14937c1c0ea519f8fc057a80fcd04a7420f8e8bcd0a7567c272e007b".getBytes());
-    private final long expiration = 1000 * 60 * 60; 
+    private final long expiration = 1000 * 60 * 60 * 90; // 90 hours
 
     // Extract username from token
     public String extractUsername(String token) {

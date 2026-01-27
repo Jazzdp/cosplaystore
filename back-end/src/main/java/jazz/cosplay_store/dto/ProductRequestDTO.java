@@ -2,24 +2,21 @@ package jazz.cosplay_store.dto;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotEmpty;
 import java.math.BigDecimal;
+import java.util.List;
 
 
 public class ProductRequestDTO {
-     @NotBlank(message = "Name is required")
     private String name;
- private String category;
- private String imageUrl;
+    private Long categoryId;
+    private String imageUrl;
     private String description;
-    private String size;
-   
-
-    @NotNull(message = "Price is required")
+    
     @Min(value = 0, message = "Price must be positive")
     private BigDecimal price;
 
-    @Min(value = 0, message = "Stock cannot be negative")
-    private int stockQuantity;
+    private List<SizeRequestDTO> sizes;
 
     // getters + setters
     public String getName() { return name; }
@@ -31,16 +28,23 @@ public class ProductRequestDTO {
     public BigDecimal getPrice() { return price; }
     public void setPrice(BigDecimal price) { this.price = price; }
 
-    public int getStockQuantity() { return stockQuantity; }
-    public void setStockQuantity(int stock) { this.stockQuantity = stock; }
-
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 
-    public String getCategory() { return category; }
-    public void setCategory(String category) { this.category = category; }
+    public Long getCategoryId() { return categoryId; }
+    public void setCategoryId(Long categoryId) { this.categoryId = categoryId; }
 
-      public String getSize() { return size; }
-      public void setSize(String size) { this.size = size; }
-    
+    public List<SizeRequestDTO> getSizes() { return sizes; }
+    public void setSizes(List<SizeRequestDTO> sizes) { this.sizes = sizes; }
+
+    // For backward compatibility - removed individual stockQuantity getter/setter
+    @Deprecated
+    public int getStockQuantity() { return 0; }
+    @Deprecated
+    public void setStockQuantity(int stock) { }
+
+    @Deprecated
+    public String getSize() { return null; }
+    @Deprecated
+    public void setSize(String size) { }
 }

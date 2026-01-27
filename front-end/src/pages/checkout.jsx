@@ -8,6 +8,7 @@ function Checkout() {
 
   const [name, setName] = useState('');
   const [address, setAddress] = useState('');
+  const [phone, setPhone] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
@@ -15,18 +16,11 @@ function Checkout() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
-    if (!name || !address) return;
-
-    // Require logged-in user to associate orders
-    const userDataRaw = localStorage.getItem('user');
-    if (!userDataRaw) {
-      setError('You must be logged in to place an order.');
-      setTimeout(() => navigate('/login'), 1200);
+    
+    if (!name || !address || !phone) {
+      setError('Please fill in all fields');
       return;
     }
-
-    let userData = null;
-    try { userData = JSON.parse(userDataRaw); } catch (err) { /* ignore */ }
 
     if (!cartItems || cartItems.length === 0) {
       setError('Your cart is empty.');
@@ -35,18 +29,39 @@ function Checkout() {
 
     setSubmitting(true);
     try {
-      // Create one order per cart item
       const token = localStorage.getItem('jwt');
+      const userDataRaw = localStorage.getItem('user');
+      let userId = null;
+
+      // Get user ID if logged in
+      if (userDataRaw) {
+        try {
+          const userData = JSON.parse(userDataRaw);
+          userId = userData.id;
+        } catch (err) {
+          console.error('Failed to parse user data:', err);
+        }
+      }
+
+      // Create one order per cart item
       for (const item of cartItems) {
         const payload = {
-          user: { id: userData.id },
+          user: userId ? { id: userId } : null,
           product: { id: item.id },
+          size: item.selectedSize ? { id: item.selectedSize.id } : null,
           quantity: item.quantity,
-          status: 'PLACED'
+          fullName: name,
+          address: address,
+          phone: parseInt(phone) || 0,
+          status: 'Pending'
         };
 
+        console.log('Sending order payload:', payload);
+
         const headers = { 'Content-Type': 'application/json' };
-        if (token) headers['Authorization'] = `Bearer ${token}`;
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
 
         const res = await fetch('http://localhost:8080/api/orders', {
           method: 'POST',
@@ -56,7 +71,8 @@ function Checkout() {
 
         if (!res.ok) {
           const txt = await res.text();
-          throw new Error(`Failed to create order: ${res.status} ${txt}`);
+          console.error('Order creation failed:', txt);
+          throw new Error(`Failed to create order: ${res.status}`);
         }
       }
 
@@ -65,7 +81,7 @@ function Checkout() {
       setTimeout(() => navigate('/'), 2200);
     } catch (err) {
       console.error('Order creation error', err);
-      setError('Failed to place order. Please try again.');
+      setError('Failed to place order: ' + err.message);
     } finally {
       setSubmitting(false);
     }
@@ -98,8 +114,11 @@ function Checkout() {
           {error && <div style={{background:'#fee2e2',padding:10,borderRadius:8,color:'#991b1b',marginBottom:12}}>{error}</div>}
           <form onSubmit={handleSubmit}>
             <input style={styles.input} placeholder="Full name" value={name} onChange={e=>setName(e.target.value)} required />
+            <input style={styles.input} placeholder="Phone number" value={phone} onChange={e=>setPhone(e.target.value)} required />
             <input style={styles.input} placeholder="Shipping address" value={address} onChange={e=>setAddress(e.target.value)} required />
-            <button type="submit" disabled={submitting} style={{padding:12,background:'linear-gradient(135deg,#ec4899,#be185d)',color:'white',border:'none',borderRadius:10,fontWeight:700,width:'100%'}}>{submitting? 'Placing...' : 'Place Order'}</button>
+            <button type="submit" disabled={submitting} style={{padding:12,background:'linear-gradient(135deg,#ec4899,#be185d)',color:'white',border:'none',borderRadius:10,fontWeight:700,width:'100%'}}>
+              {submitting ? 'Placing...' : 'Place Order'}
+            </button>
           </form>
         </div>
 
@@ -109,13 +128,13 @@ function Checkout() {
             <p style={{color:'#6b7280'}}>Your cart is empty.</p>
           ) : (
             <div>
-              {cartItems.map(it=> (
-                <div key={it.id} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'10px 0',borderBottom:'1px solid #f3f4f6'}}>
+              {cartItems.map(item => (
+                <div key={item.id} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'10px 0',borderBottom:'1px solid #f3f4f6'}}>
                   <div>
-                    <div style={{fontWeight:700,color:'#111827'}}>{it.name}</div>
-                    <div style={{fontSize:12,color:'#6b7280'}}>x {it.quantity}</div>
+                    <div style={{fontWeight:700,color:'#111827'}}>{item.name}</div>
+                    <div style={{fontSize:12,color:'#6b7280'}}>x {item.quantity}</div>
                   </div>
-                  <div style={{fontWeight:700}}>{(it.price*it.quantity).toFixed(2)} DZD</div>
+                  <div style={{fontWeight:700}}>{(item.price * item.quantity).toFixed(2)} DZD</div>
                 </div>
               ))}
 

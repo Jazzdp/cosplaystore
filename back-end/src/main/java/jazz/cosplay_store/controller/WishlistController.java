@@ -1,12 +1,15 @@
 package jazz.cosplay_store.controller;
 
 import jazz.cosplay_store.dto.ProductDTO;
+import jazz.cosplay_store.dto.SizeDTO;
 import jazz.cosplay_store.model.Product;
 import jazz.cosplay_store.model.User;
 import jazz.cosplay_store.model.Wishlist;
 import jazz.cosplay_store.repository.ProductRepository;
 import jazz.cosplay_store.repository.UserRepository;
 import jazz.cosplay_store.repository.WishlistRepository;
+
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -33,36 +36,63 @@ public class WishlistController {
         this.productRepository = productRepository;
     }
 
-    // Get authenticated user's wishlist
-    @GetMapping("/me")
-    public org.springframework.http.ResponseEntity<List<ProductDTO>> getMyWishlist(Authentication authentication) {
-        try {
-            if (authentication == null || !authentication.isAuthenticated()) {
-                logger.warn("Unauthorized access to wishlist/me");
-                return org.springframework.http.ResponseEntity.status(401).body(List.of());
-            }
-            String username = authentication.getName();
-            var user = userRepository.findByUsername(username);
-            if (user.isEmpty()) {
-                logger.warn("User not found: {}", username);
-                return org.springframework.http.ResponseEntity.status(404).body(List.of());
-            }
-            
-            List<ProductDTO> products = wishlistRepository.findByUserId(user.get().getId())
-                    .stream()
-                    .map(w -> {
-                        Product p = w.getProduct();
-                        return new ProductDTO(p.getId(), p.getName(), p.getDescription(), p.getPrice(),
-                                p.getCategory(), p.getSize(), p.getImageUrl(), p.getStockQuantity());
-                    })
-                    .collect(Collectors.toList());
-            logger.info("Loaded {} wishlist items for user {}", products.size(), username);
-            return org.springframework.http.ResponseEntity.ok(products);
-        } catch (Exception e) {
-            logger.error("Error loading wishlist", e);
-            return org.springframework.http.ResponseEntity.status(500).body(List.of());
-        }
+    // Helper method to convert Product to ProductDTO with sizes
+    private ProductDTO convertToProductDTO(Product p) {
+        List<SizeDTO> sizeDTOs = p.getSizes()
+                .stream()
+                .map(s -> new SizeDTO(s.getId(), s.getSizeValue(), s.getStock(), s.getColor()))
+                .collect(Collectors.toList());
+        return new ProductDTO(p.getId(), p.getName(), p.getDescription(), p.getPrice(),
+                p.getCategory(), p.getImageUrl(), sizeDTOs);
     }
+
+    // Get authenticated user's wishlist
+   @GetMapping("/me")
+public ResponseEntity<List<ProductDTO>> getMyWishlist(Authentication authentication) {
+    try {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            logger.warn("Unauthorized access to wishlist/me");
+            return ResponseEntity.status(401).body(List.of());
+        }
+        
+        String username = authentication.getName();
+        java.util.Optional<User> found = userRepository.findByUsername(username);
+        if (found.isEmpty()) {
+            logger.warn("User not found: {}", username);
+            return ResponseEntity.status(404).body(List.of());
+        }
+        
+        User u = found.get();
+        List<Wishlist> wishlists = wishlistRepository.findByUserId(u.getId());
+        logger.info("Found {} wishlist items for userId={}", wishlists.size(), u.getId());
+        
+        List<ProductDTO> products = new java.util.ArrayList<>();
+        for (Wishlist w : wishlists) {
+            try {
+                Product p = w.getProduct();
+                if (p != null) {
+                    ProductDTO dto = convertToProductDTO(p);
+                    products.add(dto);
+                } else {
+                    logger.warn("Wishlist item {} has null product reference", w.getId());
+                }
+            } catch (jakarta.persistence.EntityNotFoundException e) {
+                logger.warn("Skipping wishlist item {} - product {} not found", w.getId(), e.getMessage());
+                // Optionally clean up orphaned wishlist entry:
+                // wishlistRepository.delete(w);
+            } catch (Exception e) {
+                logger.error("Error processing wishlist item {}: {}", w.getId(), e.getMessage());
+            }
+        }
+        
+        logger.info("Returning {} valid products from wishlist", products.size());
+        return ResponseEntity.ok(products);
+        
+    } catch (Exception e) {
+        logger.error("Error loading wishlist: {}", e.getMessage(), e);
+        return ResponseEntity.status(500).body(List.of());
+    }
+}
 
     // Check if a product is in user's wishlist
     @GetMapping("/check/{productId}")

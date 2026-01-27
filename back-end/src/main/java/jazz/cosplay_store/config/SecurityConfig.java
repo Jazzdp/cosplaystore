@@ -54,16 +54,17 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         .authorizeHttpRequests(auth -> auth
             // Public endpoints
             .requestMatchers("/api/auth/**").permitAll()
-            .requestMatchers("/products", "/products/**").permitAll()
+            .requestMatchers("/products/**").permitAll()
+            .requestMatchers("/api/categories/**").permitAll()
             .requestMatchers("/", "/status", "/index.html").permitAll()
             // Static assets (frontend build files) - simplified to avoid complex patterns
             // Permit common static resource paths; avoid PathPattern double-wildcard issues
             .requestMatchers("/static/**", "/public/**", "/webjars/**").permitAll()
-            
+            .requestMatchers(HttpMethod.POST, "/api/orders").permitAll()
             // Authenticated endpoints - allow both users and admins
             .requestMatchers("/api/wishlist/**").authenticated()
             .requestMatchers(HttpMethod.GET, "/api/orders/me").authenticated()
-            .requestMatchers(HttpMethod.POST, "/api/orders").authenticated()
+            
             
             // Admin-only endpoints for managing all orders
             .requestMatchers(HttpMethod.GET, "/api/orders").hasRole("ADMIN")

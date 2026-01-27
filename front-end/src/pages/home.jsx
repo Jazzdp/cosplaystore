@@ -8,15 +8,16 @@ const Home = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    fetch("http://localhost:8080/products/categories")
+    fetch("http://localhost:8080/api/categories")
       .then(res => res.json())
       .then(data => {
         console.log("Categories received:", data);
-        setCategories(data);
+        setCategories(Array.isArray(data) ? data : []);
         setIsLoading(false);
       })
       .catch(err => {
-        console.error(err);
+        console.error("Error fetching categories:", err);
+        setCategories([]);
         setIsLoading(false);
       });
   }, []);
@@ -341,8 +342,8 @@ const Home = () => {
           {/* Dynamic Categories */}
           {categories.map((cat, idx) => (
             <Link 
-              key={idx} 
-              to={`/category/${cat}`} 
+              key={cat.id || idx} 
+              to={`/category/${typeof cat === 'string' ? cat : cat.name}`} 
               style={styles.categoryCard}
               onMouseEnter={(e) => {
                 Object.assign(e.currentTarget.style, styles.categoryCardHover);
@@ -359,21 +360,27 @@ const Home = () => {
               <div 
                 style={{
                   ...styles.categoryImage,
-                  background: getCategoryGradient(idx)
+                  backgroundImage: typeof cat === 'string' ? 'none' : `url('${cat.picUrl}')`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  backgroundColor: getCategoryGradient(idx),
+                  backgroundBlendMode: 'overlay'
                 }}
               >
-                <div 
-                  className="category-letter"
-                  style={styles.categoryLetter}
-                >
-                  {cat.charAt(0).toUpperCase()}
-                </div>
+                {(typeof cat !== 'string' && !cat.picUrl) || typeof cat === 'string' ? (
+                  <div 
+                    className="category-letter"
+                    style={styles.categoryLetter}
+                  >
+                    {(typeof cat === 'string' ? cat : cat.name).charAt(0).toUpperCase()}
+                  </div>
+                ) : null}
               </div>
 
               <div style={styles.categoryInfo}>
                 <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
                   <div>
-                    <h3 style={styles.categoryName}>{cat}</h3>
+                    <h3 style={styles.categoryName}>{typeof cat === 'string' ? cat : cat.name}</h3>
                     <p style={styles.categoryDesc}>Explore collection</p>
                   </div>
                   <ArrowRight size={20} style={{color: '#9ca3af'}} />

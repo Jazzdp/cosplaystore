@@ -1,6 +1,7 @@
 package jazz.cosplay_store.dto;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 public class ProductDTO {
     private Long id;
@@ -8,22 +9,20 @@ public class ProductDTO {
     private String description;
     private BigDecimal price;
     private String category;
-    private String size;
     private String imageUrl;
-    private Integer stockQuantity;
+    private List<SizeDTO> sizes;
 
     public ProductDTO() {}
 
     public ProductDTO(Long id, String name, String description, BigDecimal price, 
-                      String category, String size, String imageUrl, Integer stockQuantity) {
+                      String category, String imageUrl, List<SizeDTO> sizes) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.price = price;
         this.category = category;
-        this.size = size;
         this.imageUrl = imageUrl;
-        this.stockQuantity = stockQuantity;
+        this.sizes = sizes;
     }
 
     // Getters and Setters
@@ -42,12 +41,22 @@ public class ProductDTO {
     public String getCategory() { return category; }
     public void setCategory(String category) { this.category = category; }
 
-    public String getSize() { return size; }
-    public void setSize(String size) { this.size = size; }
-
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 
-    public Integer getStockQuantity() { return stockQuantity; }
-    public void setStockQuantity(Integer stockQuantity) { this.stockQuantity = stockQuantity; }
+    public List<SizeDTO> getSizes() { return sizes; }
+    public void setSizes(List<SizeDTO> sizes) { this.sizes = sizes; }
+
+    // For backward compatibility
+    @Deprecated
+    public Integer getStockQuantity() { 
+        return sizes != null ? sizes.stream().mapToInt(SizeDTO::getStock).sum() : 0;
+    }
+    @Deprecated
+    public void setStockQuantity(Integer stockQuantity) { }
+
+    @Deprecated
+    public String getSize() { return null; }
+    @Deprecated
+    public void setSize(String size) { }
 }

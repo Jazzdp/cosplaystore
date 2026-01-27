@@ -33,7 +33,9 @@ public class UserController {
                         user.getUsername(),
                         user.getRole(),
                         user.getEmail(),
-                        user.getFullName()
+                        user.getFullName(),
+                        user.getPhone()
+                        
                 ))
                 .collect(Collectors.toList());
     }
@@ -48,7 +50,8 @@ public class UserController {
                                 user.getUsername(),
                                 user.getRole(),
                                 user.getEmail(),
-                                user.getFullName()
+                                user.getFullName(),
+                                user.getPhone()
                         )
                 ))
                 .orElse(ResponseEntity.notFound().build());
@@ -56,13 +59,36 @@ public class UserController {
 
     // CREATE user
     @PostMapping
-    public ResponseEntity<UserResponseDTO> createUser(@Valid @RequestBody UserRequestDTO userDTO) {
+    public ResponseEntity<?> createUser(@RequestBody UserRequestDTO userDTO) {
+        // Validate required fields for creation
+        if (userDTO.getUsername() == null || userDTO.getUsername().trim().isEmpty()) {
+            return ResponseEntity.badRequest().body("Username is required");
+        }
+        if (userDTO.getPassword() == null || userDTO.getPassword().trim().isEmpty()) {
+            return ResponseEntity.badRequest().body("Password is required");
+        }
+        if (userDTO.getPassword().length() < 6) {
+            return ResponseEntity.badRequest().body("Password must be at least 6 characters long");
+        }
+        if (userDTO.getRole() == null || userDTO.getRole().trim().isEmpty()) {
+            return ResponseEntity.badRequest().body("Role is required");
+        }
+        if (userDTO.getEmail() == null || userDTO.getEmail().trim().isEmpty()) {
+            return ResponseEntity.badRequest().body("Email is required");
+        }
+        if (userDTO.getFullName() == null || userDTO.getFullName().trim().isEmpty()) {
+            return ResponseEntity.badRequest().body("Full name is required");
+        }
+
         User user = new User();
         user.setUsername(userDTO.getUsername());
         user.setPassword(userDTO.getPassword()); // later: hash it 🔒
         user.setRole(userDTO.getRole());
         user.setEmail(userDTO.getEmail());
         user.setFullName(userDTO.getFullName());
+        if (userDTO.getPhone() != null) {
+            user.setPhone(userDTO.getPhone());
+        }
 
         User saved = userRepository.save(user);
 
@@ -71,23 +97,40 @@ public class UserController {
                 saved.getUsername(),
                 saved.getRole(),
                 saved.getEmail(),
-                saved.getFullName()
+                saved.getFullName(),
+                saved.getPhone()
         ));
     }
 
     // UPDATE user
     @PutMapping("/{id}")
-    public ResponseEntity<UserResponseDTO> updateUser(
+    public ResponseEntity<?> updateUser(
             @PathVariable Long id,
-            @Valid @RequestBody UserRequestDTO userDTO) {
+            @RequestBody UserRequestDTO userDTO) {
 
         return userRepository.findById(id)
                 .map(existing -> {
-                    existing.setUsername(userDTO.getUsername());
-                    existing.setPassword(userDTO.getPassword());
-                    existing.setRole(userDTO.getRole());
-                    existing.setEmail(userDTO.getEmail());
-                    existing.setFullName(userDTO.getFullName());
+                    if (userDTO.getUsername() != null && !userDTO.getUsername().trim().isEmpty()) {
+                        existing.setUsername(userDTO.getUsername());
+                    }
+                    if (userDTO.getPassword() != null && !userDTO.getPassword().trim().isEmpty()) {
+                        if (userDTO.getPassword().length() < 6) {
+                            return ResponseEntity.badRequest().body("Password must be at least 6 characters long");
+                        }
+                        existing.setPassword(userDTO.getPassword());
+                    }
+                    if (userDTO.getRole() != null && !userDTO.getRole().trim().isEmpty()) {
+                        existing.setRole(userDTO.getRole());
+                    }
+                    if (userDTO.getEmail() != null && !userDTO.getEmail().trim().isEmpty()) {
+                        existing.setEmail(userDTO.getEmail());
+                    }
+                    if (userDTO.getFullName() != null && !userDTO.getFullName().trim().isEmpty()) {
+                        existing.setFullName(userDTO.getFullName());
+                    }
+                    if (userDTO.getPhone() != null) {
+                        existing.setPhone(userDTO.getPhone());
+                    }
 
                     User updated = userRepository.save(existing);
 
@@ -96,7 +139,8 @@ public class UserController {
                             updated.getUsername(),
                             updated.getRole(),
                             updated.getEmail(),
-                            updated.getFullName()
+                            updated.getFullName(),
+                            updated.getPhone()
                     ));
                 })
                 .orElse(ResponseEntity.notFound().build());

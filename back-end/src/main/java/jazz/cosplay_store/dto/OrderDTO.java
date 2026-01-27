@@ -6,17 +6,25 @@ public class OrderDTO {
     private Long id;
     private UserResponseDTO user;
     private ProductDTO product;
+    private SizeDTO size;
     private int quantity;
+    private int phone;
+    private String address;
+    private String fullName;
     private String status;
     private LocalDateTime createdAt;
 
     public OrderDTO() {}
 
-    public OrderDTO(Long id, UserResponseDTO user, ProductDTO product, int quantity, String status, LocalDateTime createdAt) {
+    public OrderDTO(Long id, UserResponseDTO user, ProductDTO product, SizeDTO size, int quantity, int phone, String address, String fullName, String status, LocalDateTime createdAt) {
         this.id = id;
         this.user = user;
         this.product = product;
+        this.size = size;
         this.quantity = quantity;
+        this.phone = phone;
+        this.address = address;
+        this.fullName = fullName;
         this.status = status;
         this.createdAt = createdAt;
     }
@@ -39,4 +47,14 @@ public class OrderDTO {
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-}
+    public int getPhone() { return phone; }
+    public void setPhone(int phone) { this.phone = phone; }
+    public String getAddress() { return address; }
+    public void setAddress(String address) { this.address = address; }
+    public String getFullName() { return fullName; }
+    public void setFullName(String fullName) { this.fullName = fullName; }
+
+    public SizeDTO getSize() { return size; }
+    public void setSize(SizeDTO size) { this.size = size; }
+    
+} 

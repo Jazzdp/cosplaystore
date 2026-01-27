@@ -11,13 +11,8 @@ import java.util.List;
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
     
-    // Find products by category
-    List<Product> findByCategory(String category);
-    // Find distinct categories
-    @Query("SELECT DISTINCT p.category FROM Product p")
-List<String> findDistinctCategories();
-
-   
+    // Find products by category ID
+    List<Product> findByCategoryId(Long categoryId);
     
     // Find products by name (case insensitive)
     List<Product> findByNameContainingIgnoreCase(String name);
@@ -25,6 +20,5 @@ List<String> findDistinctCategories();
     // Find products by price range
     @Query("SELECT p FROM Product p WHERE p.price BETWEEN :minPrice AND :maxPrice")
     List<Product> findByPriceRange(@Param("minPrice") double minPrice, @Param("maxPrice") double maxPrice);
-    
-   
 }
+

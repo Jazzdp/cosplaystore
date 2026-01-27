@@ -16,7 +16,8 @@ const Category = () => {
     setIsLoading(true);
     setError(null);
     
-    fetch(`http://localhost:8080/products/categories/${category}`)
+    // Fetch all products and filter by category name
+    fetch(`http://localhost:8080/products`)
       .then(res => {
         if (!res.ok) {
           throw new Error(`Failed to fetch products: ${res.status}`);
@@ -24,7 +25,11 @@ const Category = () => {
         return res.json();
       })
       .then(data => {
-        setProducts(data);
+        // Filter products by category name
+        const filtered = Array.isArray(data) ? data.filter(p => 
+          p.categoryName && p.categoryName.toLowerCase() === category.toLowerCase()
+        ) : [];
+        setProducts(filtered);
         setIsLoading(false);
       })
       .catch(err => {

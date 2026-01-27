@@ -1,11 +1,12 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Heart, ShoppingCart, Eye } from "lucide-react";
 import '../styles/itemcard.css';
 import { useCart } from '../context/CartContext';
 
 
 export default function ItemCard({ product, showToast }) {
+  const navigate = useNavigate();
   const styles = {
     card: {
       background: 'white',
@@ -209,39 +210,31 @@ export default function ItemCard({ product, showToast }) {
     checkWishlist();
   }, [product.id]);
 
-  const getStockStatus = (stockQuantity) => {
-    if (stockQuantity === 0) return { text: 'Out of Stock', color: styles.stockDotOut };
-    if (stockQuantity  < 5) return { text: 'Low Stock', color: styles.stockDotLow };
+  const getStockStatus = (sizes) => {
+    const totalStock = sizes && Array.isArray(sizes) 
+      ? sizes.reduce((total, size) => total + (size.stock || 0), 0)
+      : 0;
+    
+    if (totalStock === 0) return { text: 'Out of Stock', color: styles.stockDotOut };
+    if (totalStock < 5) return { text: 'Low Stock', color: styles.stockDotLow };
     return { text: 'In Stock', color: styles.stockDot };
   };
 
-  const stockStatus = getStockStatus(product.stockQuantity);
+  const stockStatus = getStockStatus(product.sizes);
 
   const { addToCart } = useCart();
 
   const cartProduct = { ...product, image: product.imageUrl };
 
+  const getTotalStock = (sizes) => {
+    if (!sizes || !Array.isArray(sizes)) return 0;
+    return sizes.reduce((total, size) => total + (size.stock || 0), 0);
+  };
+
   const handleAddToCart = (e, qty = 1) => {
     if (e) { e.preventDefault(); e.stopPropagation(); }
-    if (!product || product.stockQuantity === 0) {
-      // cannot add out of stock
-      try {
-        window.dispatchEvent(new CustomEvent('out-of-stock', { detail: { product: cartProduct } }));
-      } catch (err) { /* ignore */ }
-      return;
-    }
-
-    addToCart(cartProduct, qty);
-    if (typeof showToast === 'function') {
-      showToast();
-    } else {
-      // fallback: dispatch event so App can show toast
-      try {
-        window.dispatchEvent(new CustomEvent('added-to-cart', { detail: { product: cartProduct, quantity: qty } }));
-      } catch (err) {
-        /* ignore */
-      }
-    }
+    // Redirect to product details page so user can select a size
+    navigate(`/products/${product.id}`);
   };
 
   return (
@@ -373,24 +366,24 @@ export default function ItemCard({ product, showToast }) {
             {stockStatus.text} ({product.stockQuantity})
           </div>
           
-          <button 
-            style={{
-              ...styles.addToCartButton,
-              opacity: product.stockQuantity === 0 ? 0.6 : 1,
-              cursor: product.stockQuantity === 0 ? 'not-allowed' : 'pointer'
-            }}
-            onMouseEnter={(e) => product.stockQuantity > 0 && Object.assign(e.target.style, styles.addToCartButtonHover)}
-            onMouseLeave={(e) => {
-              e.target.style.transform = 'translateY(0)';
-              e.target.style.boxShadow = '0 5px 15px rgba(236, 72, 153, 0.3)';
-            }}
-            onClick={(e) => handleAddToCart(e, 1)}
-            disabled={product.stockQuantity === 0}
-            aria-disabled={product.stockQuantity === 0}
-          >
-            <ShoppingCart size={16} />
-            {product.stockQuantity === 0 ? 'Out of Stock' : 'Add'}
-          </button>
+            <button 
+              style={{
+                ...styles.addToCartButton,
+                opacity: product.stockQuantity === 0 ? 0.6 : 1,
+                cursor: product.stockQuantity === 0 ? 'not-allowed' : 'pointer'
+              }}
+              onMouseEnter={(e) => product.stockQuantity > 0 && Object.assign(e.target.style, styles.addToCartButtonHover)}
+              onMouseLeave={(e) => {
+                e.target.style.transform = 'translateY(0)';
+                e.target.style.boxShadow = '0 5px 15px rgba(236, 72, 153, 0.3)';
+              }}
+              onClick={(e) => handleAddToCart(e, 1)}
+              disabled={product.stockQuantity === 0}
+              aria-disabled={product.stockQuantity === 0}
+            >
+              <ShoppingCart size={16} />
+              {product.stockQuantity === 0 ? 'Out of Stock' : 'Select Size'}
+            </button>
         </div>
       </div>
     </div>

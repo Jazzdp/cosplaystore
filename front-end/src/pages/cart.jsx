@@ -394,16 +394,16 @@ function Cart() {
     return () => { cancelled = true; };
   }, [cartItems, refreshKey]);
 
-  const handleQuantityChange = (productId, change) => {
-    const currentItem = cartItems.find(item => item.id === productId);
+  const handleQuantityChange = (cartItemId, change) => {
+    const currentItem = cartItems.find(item => item.cartItemId === cartItemId);
     if (!currentItem) return;
 
     const newQuantity = currentItem.quantity + change;
     
     if (newQuantity <= 0) {
-      removeFromCart(productId);
+      removeFromCart(cartItemId);
     } else {
-      updateQuantity(productId, newQuantity);
+      updateQuantity(cartItemId, newQuantity);
     }
   };
 
@@ -550,6 +550,17 @@ function Cart() {
                       <div style={styles.cartItemInfo}>
                         <h3 style={styles.cartItemName}>{product.name}</h3>
                         <div style={styles.cartItemCategory}>{product.category}</div>
+                        {item.selectedSize && (
+                          <div style={{ 
+                            fontSize: '0.85rem', 
+                            color: '#ec4899', 
+                            fontWeight: '600',
+                            marginBottom: '8px'
+                          }}>
+                            Size: <strong>{item.selectedSize.sizeValue}</strong>
+                            {item.selectedSize.color && ` - ${item.selectedSize.color}`}
+                          </div>
+                        )}
                         <div style={styles.cartItemPrice}>${formatMoney(product.price)}</div>
                         
                           <div style={styles.cartItemActions}>
@@ -557,7 +568,7 @@ function Cart() {
                             <button 
                               type="button"
                               style={styles.quantityButton}
-                              onClick={() => handleQuantityChange(item.id, -1)}
+                              onClick={() => handleQuantityChange(item.cartItemId, -1)}
                               onMouseEnter={(e) => {
                                 e.target.style.background = '#be185d';
                               }}
@@ -571,7 +582,7 @@ function Cart() {
                             <button 
                               type="button"
                               style={styles.quantityButton}
-                              onClick={() => handleQuantityChange(item.id, 1)}
+                              onClick={() => handleQuantityChange(item.cartItemId, 1)}
                               onMouseEnter={(e) => {
                                 e.target.style.background = '#be185d';
                               }}
@@ -589,7 +600,7 @@ function Cart() {
                           <button 
                             type="button"
                             style={styles.removeButton}
-                            onClick={() => removeFromCart(item.id)}
+                            onClick={() => removeFromCart(item.cartItemId)}
                             onMouseEnter={(e) => {
                               e.target.style.background = '#fef2f2';
                             }}

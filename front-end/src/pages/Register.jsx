@@ -7,6 +7,7 @@ const Register = () => {
     username: '',
     password: '',
     email: '',
+    phone: '',
     fullName: ''
   });
 
@@ -178,6 +179,21 @@ const Register = () => {
               placeholder="Your full name"
             />
           </div>
+           <div style={styles.formGroup}>
+            <label style={styles.label}>Phone Number</label>
+            <input
+              style={styles.input}
+              type="tel"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              onFocus={(e) => Object.assign(e.target.style, styles.inputFocus)}
+              onBlur={(e) => { e.target.style.borderColor = '#e5e7eb'; e.target.style.boxShadow = 'none'; }}
+              required
+              placeholder="Your phone number"
+            />
+          </div>
+             
 
           <div style={styles.formGroup}>
             <label style={styles.label}>Email</label>

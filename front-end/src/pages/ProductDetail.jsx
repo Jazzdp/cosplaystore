@@ -4,12 +4,19 @@ import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, Heart, ShoppingCart, Share2, Star, Truck, Shield, RotateCcw } from "lucide-react";
 import '../styles/productdetail.css';
 
+// Helper function to calculate total stock from sizes
+const getTotalStock = (sizes) => {
+  if (!sizes || !Array.isArray(sizes)) return 0;
+  return sizes.reduce((total, size) => total + (size.stock || 0), 0);
+};
+
 export default function ProductDetail() {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [quantity, setQuantity] = useState(1);
+  const [selectedSize, setSelectedSize] = useState(null);
   const [isLiked, setIsLiked] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [loadingWishlist, setLoadingWishlist] = useState(false);
@@ -26,6 +33,10 @@ export default function ProductDetail() {
       })
       .then((data) => {
         setProduct(data);
+        // Auto-select first size if available
+        if (data.sizes && data.sizes.length > 0) {
+          setSelectedSize(data.sizes[0]);
+        }
         setIsLoading(false);
       })
       .catch((err) => {
@@ -453,12 +464,59 @@ export default function ProductDetail() {
               <div style={styles.stockSection}>
                 <div style={styles.stockDot}></div>
                 <span style={styles.stockText}>
-                  {product.stockQuantity > 0 
-                    ? `${product.stockQuantity} items in stock` 
+                  {getTotalStock(product.sizes) > 0 
+                    ? `${getTotalStock(product.sizes)} items in stock` 
                     : 'Out of stock'
                   }
                 </span>
               </div>
+
+              {/* Size Selector */}
+              {product.sizes && product.sizes.length > 0 && (
+                <div style={styles.quantitySection}>
+                  <label style={styles.quantityLabel}>Select Size</label>
+                  <div style={{
+                    display: 'flex',
+                    gap: '10px',
+                    flexWrap: 'wrap'
+                  }}>
+                    {product.sizes.map((size) => (
+                      <button
+                        key={size.id}
+                        onClick={() => setSelectedSize(size)}
+                        style={{
+                          padding: '10px 16px',
+                          border: selectedSize?.id === size.id ? '2px solid #ec4899' : '2px solid #e5e7eb',
+                          background: selectedSize?.id === size.id ? '#fce7f3' : 'white',
+                          borderRadius: '8px',
+                          cursor: 'pointer',
+                          fontWeight: '600',
+                          color: selectedSize?.id === size.id ? '#ec4899' : '#374151',
+                          transition: 'all 0.3s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.borderColor = '#ec4899';
+                          e.target.style.transform = 'scale(1.05)';
+                        }}
+                        onMouseLeave={(e) => {
+                          if (selectedSize?.id !== size.id) {
+                            e.target.style.borderColor = '#e5e7eb';
+                          }
+                          e.target.style.transform = 'scale(1)';
+                        }}
+                      >
+                        {size.sizeValue} ({size.stock} in stock)
+                      </button>
+                    ))}
+                  </div>
+                  {selectedSize && (
+                    <p style={{ marginTop: '10px', fontSize: '0.9rem', color: '#6b7280' }}>
+                      {selectedSize.color && `Color: ${selectedSize.color} | `}
+                      Available: {selectedSize.stock} units
+                    </p>
+                  )}
+                </div>
+              )}
 
               {/* Quantity Selector */}
               <div style={styles.quantitySection}>
@@ -467,9 +525,12 @@ export default function ProductDetail() {
                   <button 
                     style={styles.quantityButton}
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    disabled={getTotalStock(product.sizes) === 0}
                     onMouseEnter={(e) => {
-                      e.target.style.borderColor = '#ec4899';
-                      e.target.style.color = '#ec4899';
+                      if (getTotalStock(product.sizes) > 0) {
+                        e.target.style.borderColor = '#ec4899';
+                        e.target.style.color = '#ec4899';
+                      }
                     }}
                     onMouseLeave={(e) => {
                       e.target.style.borderColor = '#e5e7eb';
@@ -483,15 +544,21 @@ export default function ProductDetail() {
                     value={quantity}
                     onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
                     min="1"
-                    max={product.stockQuantity}
+                    max={selectedSize ? selectedSize.stock : getTotalStock(product.sizes)}
                     style={styles.quantityInput}
                   />
                   <button 
                     style={styles.quantityButton}
-                    onClick={() => setQuantity(Math.min(product.stockQuantity, quantity + 1))}
+                    onClick={() => {
+                      const maxStock = selectedSize ? selectedSize.stock : getTotalStock(product.sizes);
+                      setQuantity(Math.min(maxStock, quantity + 1));
+                    }}
+                    disabled={getTotalStock(product.sizes) === 0}
                     onMouseEnter={(e) => {
-                      e.target.style.borderColor = '#ec4899';
-                      e.target.style.color = '#ec4899';
+                      if (getTotalStock(product.sizes) > 0) {
+                        e.target.style.borderColor = '#ec4899';
+                        e.target.style.color = '#ec4899';
+                      }
                     }}
                     onMouseLeave={(e) => {
                       e.target.style.borderColor = '#e5e7eb';
@@ -507,9 +574,9 @@ export default function ProductDetail() {
               <div style={styles.buttonGroup}>
                 <button 
                   style={styles.addToCartButton}
-                  disabled={product.stockQuantity === 0}
+                  disabled={getTotalStock(product.sizes) === 0}
                   onMouseEnter={(e) => {
-                    if (product.stockQuantity > 0) {
+                    if (getTotalStock(product.sizes) > 0) {
                       e.target.style.transform = 'translateY(-2px)';
                       e.target.style.boxShadow = '0 12px 35px rgba(236, 72, 153, 0.4)';
                     }
@@ -519,17 +586,22 @@ export default function ProductDetail() {
                     e.target.style.boxShadow = '0 8px 25px rgba(236, 72, 153, 0.3)';
                   }}
                   onClick={() => {
-                    if (product.stockQuantity === 0) {
+                    if (getTotalStock(product.sizes) === 0) {
                       window.dispatchEvent(new CustomEvent('out-of-stock', { detail: { product, quantity } }));
                       return;
                     }
-                    addToCart({ ...product, image: product.imageUrl }, quantity);
-                    // dispatch custom event so App-level toast can pick it up
-                    window.dispatchEvent(new CustomEvent('added-to-cart', { detail: { product, quantity } }));
+                    // Add to cart with selected size
+                    const cartItem = {
+                      ...product,
+                      image: product.imageUrl,
+                      selectedSize: selectedSize
+                    };
+                    addToCart(cartItem, quantity);
+                    window.dispatchEvent(new CustomEvent('added-to-cart', { detail: { product, quantity, size: selectedSize } }));
                   }}
                 >
                   <ShoppingCart size={20} />
-                  {product.stockQuantity === 0 ? 'Out of Stock' : 'Add to Cart'}
+                  {getTotalStock(product.sizes) === 0 ? 'Out of Stock' : 'Add to Cart'}
                 </button>
 
                 <button 

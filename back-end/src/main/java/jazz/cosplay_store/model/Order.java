@@ -12,7 +12,7 @@ public class Order {
 
     // many orders belong to 1 user
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = true )
     private User user;
 
     // many orders can contain 1 product
@@ -20,7 +20,14 @@ public class Order {
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
+    @ManyToOne
+    @JoinColumn(name = "size_id", nullable = true)
+    private Size size;
+
     private int quantity;
+    private int phone;
+    private String address;
+    private String fullName;
     private String status;
 
     private LocalDateTime createdAt = LocalDateTime.now();
@@ -68,5 +75,31 @@ public void setStatus(String status) {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+    public int getPhone() {
+        return phone;
+    }
+    public void setPhone(int phone) {
+        this.phone = phone;
+    }
+    public String getAddress() {
+        return address;
+    }
+    public void setAddress(String address) {
+        this.address = address;
+    }
+    public String getFullName() {
+        return fullName;
+    }
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
+    }
+
+    public Size getSize() {
+        return size;
+    }
+
+    public void setSize(Size size) {
+        this.size = size;
     }
 }
