@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS `orders` (
   `created_at` datetime(6) DEFAULT NULL,
   `quantity` int NOT NULL,
   `product_id` bigint NOT NULL,
-  `user_id` bigint NOT NULL,
+  `user_id` bigint DEFAULT NULL,
   `status` varchar(255) DEFAULT NULL,
   `createdAt` datetime(6) DEFAULT NULL,
   PRIMARY KEY (`id`)
