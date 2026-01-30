@@ -1,4 +1,4 @@
-/*package jazz.cosplay_store.config;
+package jazz.cosplay_store.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -33,4 +33,4 @@ public class CorsConfig implements WebMvcConfigurer {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
-}*/
+}

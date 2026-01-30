@@ -3,6 +3,7 @@ package jazz.cosplay_store.config;
 import jazz.cosplay_store.config.JwtAuthenticationFilter;
 import jazz.cosplay_store.service.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -28,6 +29,9 @@ public class SecurityConfig {
 
     @Autowired
     private JwtAuthenticationFilter jwtFilter;
+
+    @Value("${app.frontend-url:http://localhost:3000}")
+    private String frontendUrl;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -81,16 +85,16 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     return http.build();
 }
 @Bean
-
 public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
-    configuration.addAllowedOrigin("http://localhost:3000"); // React dev (CRA)
+    // Allow frontend URLs (development and production)
+    configuration.addAllowedOrigin("http://localhost:3000"); // Local dev
     configuration.addAllowedOrigin("http://localhost:5173"); // Vite dev
+    configuration.addAllowedOrigin(frontendUrl); // Production frontend
     configuration.addAllowedMethod("*"); // Allow all HTTP methods
     configuration.addAllowedHeader("*"); // Allow all headers
     configuration.setAllowCredentials(true);
 
-    
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
     source.registerCorsConfiguration("/**", configuration);
     return source;

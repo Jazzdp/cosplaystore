@@ -34,11 +34,11 @@ public class UserService implements UserDetailsService {
                 .build();
     }
 
-    @PostConstruct
+    @PostConstruct // runs once after bean construction
     public void init() {
-        if (userRepository.findByUsername("JAZZ").isEmpty()) {
+        if (userRepository.findByUsername("ADMIN").isEmpty()) { // create admin user if not exists
             User admin = new User();
-            admin.setUsername("JAZZ");
+            admin.setUsername("ADMIN");
             admin.setPassword(passwordEncoder.encode("1234")); 
             admin.setRole("ROLE_ADMIN");
             userRepository.save(admin);
