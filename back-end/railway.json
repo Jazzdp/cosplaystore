@@ -1,0 +1,4 @@
+{
+  "builder": "dockerfile",
+  "buildCommand": "./gradlew clean build -x test -Pproduction"
+}
