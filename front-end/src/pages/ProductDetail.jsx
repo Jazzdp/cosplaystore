@@ -3,7 +3,8 @@ import { useCart } from '../context/CartContext';
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, Heart, ShoppingCart, Share2, Star, Truck, Shield, RotateCcw } from "lucide-react";
 import '../styles/productdetail.css';
-
+import authenticatedApi from "../Util/AxiosConfig";
+import api from "../Util/AxiosConfig";
 // Helper function to calculate total stock from sizes
 const getTotalStock = (sizes) => {
   if (!sizes || !Array.isArray(sizes)) return 0;
@@ -26,7 +27,7 @@ export default function ProductDetail() {
     if (!id) return;
     
     setIsLoading(true);
-    fetch(`http://localhost:8080/products/${id}`)
+    api.get(`/products/${id}`)
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch product");
         return res.json();
@@ -51,7 +52,7 @@ export default function ProductDetail() {
     const token = localStorage.getItem('jwt');
     if (!token || !id) return;
     try {
-      fetch(`http://localhost:8080/api/wishlist/check/${id}`, {
+      api.get(`/api/wishlist/check/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       })
         .then(res => res.ok ? res.text() : null)

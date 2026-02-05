@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Heart } from 'lucide-react';
 import '../styles/itemcard.css';
-
+import api from '../Util/AxiosConfig';
+import authenticatedApi from '../Util/AxiosConfig';
 // Wishlist Card Component
 function WishlistCard({ product, onRemove, navigate, styles }) {
   const [isHovered, setIsHovered] = useState(false);
@@ -82,7 +83,7 @@ export default function WishlistPage() {
     setError(null);
     const load = async () => {
       try {
-        const res = await fetchWithAuth('http://localhost:8080/api/wishlist/me');
+        const res = await authenticatedApi.get('/api/wishlist/me');
         if (!res.ok) throw new Error(`Failed to load wishlist (${res.status})`);
         const data = await res.json();
         if (!mounted) return;
@@ -102,10 +103,7 @@ export default function WishlistPage() {
     try {
       const jwt = localStorage.getItem('jwt');
       console.debug('Wishlist remove, jwt present:', !!jwt, 'productId:', productId);
-      const res = await fetch(`http://localhost:8080/api/wishlist/toggle/${productId}`, {
-        method: 'POST',
-        headers: jwt ? { Authorization: `Bearer ${jwt}` } : {}
-      });
+      const res = await authenticatedApi.post(`/api/wishlist/toggle/${productId}`);
       console.debug('Wishlist toggle response status:', res.status);
       if (res.ok) {
         const body = await res.json().catch(() => ({}));

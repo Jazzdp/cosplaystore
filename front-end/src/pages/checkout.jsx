@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useCart } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
-
+import authenticatedApi from '../Util/AxiosConfig';
+import api from '../Util/AxiosConfig';
 function Checkout() {
   const { cartItems, getCartTotal, clearCart } = useCart();
   const navigate = useNavigate();
@@ -63,10 +64,9 @@ function Checkout() {
           headers['Authorization'] = `Bearer ${token}`;
         }
 
-        const res = await fetch('http://localhost:8080/api/orders', {
-          method: 'POST',
-          headers,
-          body: JSON.stringify(payload)
+        const res = await authenticatedApi.post('/api/orders', {
+          body: JSON.stringify(payload),
+          headers
         });
 
         if (!res.ok) {

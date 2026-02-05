@@ -3,6 +3,8 @@ import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, Search, Heart, ShoppingCart } from "lucide-react";
 import '../styles/category.css';
 import ItemCard from "../components/itemcard";
+import api from './path/to/axios/config';
+
 
 const Allproducts = ({ showToast }) => {
   const [products, setProducts] = useState([]);
@@ -23,7 +25,7 @@ const Allproducts = ({ showToast }) => {
       setError(null);
       
       try {
-        const response = await fetch("http://localhost:8080/products");
+        const response = await api.get("/products");
         
         if (!response.ok) {
           throw new Error(`Failed to fetch products: ${response.status} ${response.statusText}`);

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { UserPlus } from 'lucide-react';
+import api from '../Util/AxiosConfig';
+import authenticatedApi from '../Util/AxiosConfig';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -28,8 +30,7 @@ const Register = () => {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:8080/api/auth/register', {
-        method: 'POST',
+      const response = await api.post('/api/auth/register', {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       });

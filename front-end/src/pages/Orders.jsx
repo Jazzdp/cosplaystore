@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ShoppingCart } from 'lucide-react';
+import authenticatedApi from '../Util/AxiosConfig';
+import api from '../Util/AxiosConfig';
 
 export default function OrdersPage() {
   const navigate = useNavigate();
@@ -20,7 +22,7 @@ export default function OrdersPage() {
     const load = async () => {
       try {
         // Use /api/orders/me for authenticated users to fetch only their own orders
-        const res = await fetchWithAuth('http://localhost:8080/api/orders/me');
+        const res = await authenticatedApi.get('/api/orders/me');
         if (!res.ok) throw new Error(`Failed to load orders (${res.status})`);
         const data = await res.json();
         if (!mounted) return;

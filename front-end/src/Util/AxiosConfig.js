@@ -4,6 +4,11 @@ import axios from "axios";
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api",
 });
+// Create a separate instance for authenticated requests
+export const authenticatedApi = axios.create({
+  baseURL: API_BASE_URL,
+});
+
 
 // Add JWT automatically
 api.interceptors.request.use((config) => {

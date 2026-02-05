@@ -3,12 +3,12 @@ import { useCart } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ShoppingCart, Trash2, Plus, Minus } from 'lucide-react';
 import '../styles/cart.css';
-
+import api from './path/to/axios/config';
 // API service to fetch product details
 const productAPI = {
   getProductById: async (id) => {
     try {
-      const response = await fetch(`http://localhost:8080/products/${id}`);
+      const response = await api.get(`/products/${id}`);
       if (!response.ok) throw new Error('Product not found');
       return await response.json();
     } catch (error) {

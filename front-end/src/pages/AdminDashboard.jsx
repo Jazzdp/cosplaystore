@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import authenticatedApi from '../Util/AxiosConfig';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -35,18 +36,6 @@ export default function AdminDashboard() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const API_URL = 'http://localhost:8080';
-
-  const fetchWithAuth = (url) => {
-    const jwt = localStorage.getItem('jwt');
-    const headers = jwt ? { 
-      'Authorization': `Bearer ${jwt}`,
-      'Content-Type': 'application/json'
-    } : { 'Content-Type': 'application/json' };
-    
-    return fetch(url, { headers });
-  };
-
   const verifyAdminAccess = async () => {
     const jwt = localStorage.getItem('jwt');
     const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -57,18 +46,13 @@ export default function AdminDashboard() {
     }
 
     try {
-      const res = await fetchWithAuth(`${API_URL}/api/admin/verify`);
-      if (!res.ok) {
-        navigate('/login');
-        return false;
+      const res = await authenticatedApi.get('/admin/verify');
+      if (res.data && res.data.authorized) {
+        setAuthorized(true);
+        return true;
       }
-      const data = await res.json();
-      if (!data.authorized) {
-        navigate('/login');
-        return false;
-      }
-      setAuthorized(true);
-      return true;
+      navigate('/login');
+      return false;
     } catch (err) {
       console.error('Admin verification failed:', err);
       navigate('/login');
@@ -79,28 +63,16 @@ export default function AdminDashboard() {
   const loadData = async () => {
     try {
       const [pRes, uRes, oRes, cRes] = await Promise.all([
-        fetchWithAuth(`${API_URL}/products`),
-        fetchWithAuth(`${API_URL}/api/users`),
-        fetchWithAuth(`${API_URL}/api/orders`),
-        fetchWithAuth(`${API_URL}/api/categories`)
+        authenticatedApi.get('/products'),
+        authenticatedApi.get('/users'),
+        authenticatedApi.get('/orders'),
+        authenticatedApi.get('/categories')
       ]);
 
-      if (pRes && pRes.ok) {
-        const data = await pRes.json();
-        setProducts(Array.isArray(data) ? data : []);
-      }
-      if (uRes && uRes.ok) {
-        const data = await uRes.json();
-        setUsers(Array.isArray(data) ? data : []);
-      }
-      if (oRes && oRes.ok) {
-        const data = await oRes.json();
-        setOrders(Array.isArray(data) ? data : []);
-      }
-      if (cRes && cRes.ok) {
-        const data = await cRes.json();
-        setCategories(Array.isArray(data) ? data : []);
-      }
+      setProducts(Array.isArray(pRes.data) ? pRes.data : []);
+      setUsers(Array.isArray(uRes.data) ? uRes.data : []);
+      setOrders(Array.isArray(oRes.data) ? oRes.data : []);
+      setCategories(Array.isArray(cRes.data) ? cRes.data : []);
     } catch (err) {
       console.error('Failed to load data', err);
     } finally {
@@ -121,53 +93,36 @@ export default function AdminDashboard() {
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure?')) return;
     try {
-      const jwt = localStorage.getItem('jwt');
-      const res = await fetch(`${API_URL}/products/${id}`, {
-        method: 'DELETE',
-        headers: jwt ? { Authorization: `Bearer ${jwt}` } : {}
-      });
-      if (res.ok) setProducts(products.filter(p => p.id !== id));
+      await authenticatedApi.delete(`/products/${id}`);
+      setProducts(products.filter(p => p.id !== id));
+      setSuccess('Product deleted successfully!');
     } catch (err) {
       console.error(err);
+      setError('Failed to delete product');
     }
   };
 
   const handleDeleteOrder = async (id) => {
     if (!window.confirm('Are you sure you want to delete this order?')) return;
     try {
-      const jwt = localStorage.getItem('jwt');
-      const res = await fetch(`${API_URL}/api/orders/${id}`, {
-        method: 'DELETE',
-        headers: jwt ? { Authorization: `Bearer ${jwt}` } : {}
-      });
-      if (res.ok) {
-        setOrders(orders.filter(o => o.id !== id));
-      } else {
-        alert('Failed to delete order');
-      }
+      await authenticatedApi.delete(`/orders/${id}`);
+      setOrders(orders.filter(o => o.id !== id));
+      setSuccess('Order deleted successfully!');
     } catch (err) {
       console.error(err);
-      alert('Error deleting order');
+      setError('Failed to delete order');
     }
   };
 
   const handleDeleteUser = async (id) => {
     if (!window.confirm('Are you sure you want to delete this user?')) return;
     try {
-      const jwt = localStorage.getItem('jwt');
-      const res = await fetch(`${API_URL}/api/users/${id}`, {
-        method: 'DELETE',
-        headers: jwt ? { Authorization: `Bearer ${jwt}` } : {}
-      });
-      if (res.ok) {
-        setUsers(users.filter(u => u.id !== id));
-        setSuccess('User deleted successfully!');
-      } else {
-        alert('Failed to delete user');
-      }
+      await authenticatedApi.delete(`/users/${id}`);
+      setUsers(users.filter(u => u.id !== id));
+      setSuccess('User deleted successfully!');
     } catch (err) {
       console.error(err);
-      alert('Error deleting user');
+      setError('Failed to delete user');
     }
   };
 
@@ -192,20 +147,12 @@ export default function AdminDashboard() {
   const handleDeleteCategory = async (id) => {
     if (!window.confirm('Are you sure you want to delete this category?')) return;
     try {
-      const jwt = localStorage.getItem('jwt');
-      const res = await fetch(`${API_URL}/api/categories/${id}`, {
-        method: 'DELETE',
-        headers: jwt ? { Authorization: `Bearer ${jwt}` } : {}
-      });
-      if (res.ok) {
-        setCategories(categories.filter(c => c.id !== id));
-        setSuccess('Category deleted successfully!');
-      } else {
-        alert('Failed to delete category');
-      }
+      await authenticatedApi.delete(`/categories/${id}`);
+      setCategories(categories.filter(c => c.id !== id));
+      setSuccess('Category deleted successfully!');
     } catch (err) {
       console.error(err);
-      alert('Error deleting category');
+      setError('Failed to delete category');
     }
   };
 
@@ -217,17 +164,17 @@ export default function AdminDashboard() {
   };
 
   const handleEditOrder = (order) => {
-  setOrderFormData({
-    id: order.id,
-    quantity: order.quantity || 1,
-    status: order.status || 'Pending',
-    phone: order.phone || '',
-    address: order.address || '',
-    fullName: order.fullName || '',
-    size: order.size || null,
-    productId: order.product?.id,
-    createdAt: order.createdAt
-  });
+    setOrderFormData({
+      id: order.id,
+      quantity: order.quantity || 1,
+      status: order.status || 'Pending',
+      phone: order.phone || '',
+      address: order.address || '',
+      fullName: order.fullName || '',
+      size: order.size || null,
+      productId: order.product?.id,
+      createdAt: order.createdAt
+    });
 
     setModalMode('edit');
     setModalType('order');
@@ -244,7 +191,6 @@ export default function AdminDashboard() {
   const handleSubmit = async () => {
     setError('');
     setSuccess('');
-    const jwt = localStorage.getItem('jwt');
     
     if (modalType === 'product') {
       // Only validate all fields when ADDING (not editing)
@@ -289,35 +235,22 @@ export default function AdminDashboard() {
         imageUrl: formData.image,
         description: formData.description || ''
       };
-      const headers = { 'Content-Type': 'application/json', ...(jwt ? { Authorization: `Bearer ${jwt}` } : {}) };
 
       try {
         if (modalMode === 'add') {
-          const res = await fetch(`${API_URL}/products`, { method: 'POST', headers, body: JSON.stringify(payload) });
-          if (res.ok) {
-            const newProduct = await res.json();
-            setProducts([newProduct, ...products]);
-            setSuccess('Product added successfully!');
-            setTimeout(() => setShowModal(false), 500);
-          } else {
-            const errorData = await res.json().catch(() => ({}));
-            setError(errorData.message || 'Failed to add product');
-          }
+          const res = await authenticatedApi.post('/products', payload);
+          setProducts([res.data, ...products]);
+          setSuccess('Product added successfully!');
+          setTimeout(() => setShowModal(false), 500);
         } else {
-          const res = await fetch(`${API_URL}/products/${formData.id}`, { method: 'PUT', headers, body: JSON.stringify(payload) });
-          if (res.ok) {
-            const updated = await res.json();
-            setProducts(products.map(p => p.id === formData.id ? updated : p));
-            setSuccess('Product updated successfully!');
-            setTimeout(() => setShowModal(false), 500);
-          } else {
-            const errorData = await res.json().catch(() => ({}));
-            setError(errorData.message || 'Failed to update product');
-          }
+          const res = await authenticatedApi.put(`/products/${formData.id}`, payload);
+          setProducts(products.map(p => p.id === formData.id ? res.data : p));
+          setSuccess('Product updated successfully!');
+          setTimeout(() => setShowModal(false), 500);
         }
       } catch (err) {
         console.error(err);
-        setError('Error: ' + (err.message || 'Unknown error occurred'));
+        setError(err.response?.data?.message || 'Failed to save product');
       }
     } else if (modalType === 'order') {
       // Update order
@@ -329,7 +262,6 @@ export default function AdminDashboard() {
         fullName: orderFormData.fullName,
         size: orderFormData.size ? { id: orderFormData.size.id } : null
       };
-      const headers = { 'Content-Type': 'application/json', ...(jwt ? { Authorization: `Bearer ${jwt}` } : {}) };
 
       try {
         // If status is changed to Cancelled, delete the order (which will restore stock)
@@ -337,49 +269,19 @@ export default function AdminDashboard() {
           if (!window.confirm('Cancelling this order will restore the stock. Continue?')) {
             return;
           }
-          const res = await fetch(`${API_URL}/api/orders/${orderFormData.id}`, { 
-            method: 'DELETE', 
-            headers
-          });
-          
-          if (res.ok) {
-            setOrders(orders.filter(o => o.id !== orderFormData.id));
-            setShowModal(false);
-          } else {
-            alert('Failed to cancel order');
-          }
+          await authenticatedApi.delete(`/orders/${orderFormData.id}`);
+          setOrders(orders.filter(o => o.id !== orderFormData.id));
+          setSuccess('Order cancelled successfully!');
+          setShowModal(false);
         } else {
-          const res = await fetch(`${API_URL}/api/orders/${orderFormData.id}`, { 
-            method: 'PUT', 
-            headers, 
-            body: JSON.stringify(payload) 
-          });
-          
-          if (res.ok) {
-            try {
-              const updated = await res.json();
-              setOrders(orders.map(o => o.id === orderFormData.id ? updated : o));
-            } catch (parseErr) {
-              console.warn('Could not parse response, refreshing orders list', parseErr);
-              // Reload orders from server
-              const ordersRes = await fetch(`${API_URL}/api/orders`, {
-                headers: jwt ? { Authorization: `Bearer ${jwt}` } : {}
-              });
-              if (ordersRes.ok) {
-                const updatedOrders = await ordersRes.json();
-                setOrders(updatedOrders);
-              }
-            }
-            setShowModal(false);
-          } else {
-            const errorText = await res.text();
-            console.error('Update failed:', res.status, errorText);
-            alert('Failed to update order: ' + (errorText || 'Unknown error'));
-          }
+          const res = await authenticatedApi.put(`/orders/${orderFormData.id}`, payload);
+          setOrders(orders.map(o => o.id === orderFormData.id ? res.data : o));
+          setSuccess('Order updated successfully!');
+          setShowModal(false);
         }
       } catch (err) {
         console.error('Error updating order:', err);
-        alert('Error updating order: ' + err.message);
+        setError(err.response?.data?.message || 'Failed to update order');
       }
     } else if (modalType === 'user') {
       // Update user
@@ -391,27 +293,15 @@ export default function AdminDashboard() {
         role: userFormData.role,
         password: userFormData.password || ''
       };
-      const headers = { 'Content-Type': 'application/json', ...(jwt ? { Authorization: `Bearer ${jwt}` } : {}) };
 
       try {
-        const res = await fetch(`${API_URL}/api/users/${userFormData.id}`, { 
-          method: 'PUT', 
-          headers, 
-          body: JSON.stringify(payload) 
-        });
-        
-        if (res.ok) {
-          const updated = await res.json();
-          setUsers(users.map(u => u.id === userFormData.id ? updated : u));
-          setSuccess('User updated successfully!');
-          setTimeout(() => setShowModal(false), 500);
-        } else {
-          const errorData = await res.json().catch(() => ({}));
-          setError(errorData.message || 'Failed to update user');
-        }
+        const res = await authenticatedApi.put(`/users/${userFormData.id}`, payload);
+        setUsers(users.map(u => u.id === userFormData.id ? res.data : u));
+        setSuccess('User updated successfully!');
+        setTimeout(() => setShowModal(false), 500);
       } catch (err) {
         console.error('Error updating user:', err);
-        setError('Error: ' + (err.message || 'Unknown error occurred'));
+        setError(err.response?.data?.message || 'Failed to update user');
       }
     } else if (modalType === 'category') {
       // Validate category fields
@@ -428,45 +318,22 @@ export default function AdminDashboard() {
         name: categoryFormData.name,
         picUrl: categoryFormData.picUrl
       };
-      const headers = { 'Content-Type': 'application/json', ...(jwt ? { Authorization: `Bearer ${jwt}` } : {}) };
 
       try {
         if (modalMode === 'add') {
-          const res = await fetch(`${API_URL}/api/categories`, { 
-            method: 'POST', 
-            headers, 
-            body: JSON.stringify(payload) 
-          });
-          
-          if (res.ok) {
-            const newCategory = await res.json();
-            setCategories([...categories, newCategory]);
-            setSuccess('Category added successfully!');
-            setTimeout(() => setShowModal(false), 500);
-          } else {
-            const errorData = await res.json().catch(() => ({}));
-            setError(errorData.message || 'Failed to add category');
-          }
+          const res = await authenticatedApi.post('/categories', payload);
+          setCategories([...categories, res.data]);
+          setSuccess('Category added successfully!');
+          setTimeout(() => setShowModal(false), 500);
         } else {
-          const res = await fetch(`${API_URL}/api/categories/${categoryFormData.id}`, { 
-            method: 'PUT', 
-            headers, 
-            body: JSON.stringify(payload) 
-          });
-          
-          if (res.ok) {
-            const updated = await res.json();
-            setCategories(categories.map(c => c.id === categoryFormData.id ? updated : c));
-            setSuccess('Category updated successfully!');
-            setTimeout(() => setShowModal(false), 500);
-          } else {
-            const errorData = await res.json().catch(() => ({}));
-            setError(errorData.message || 'Failed to update category');
-          }
+          const res = await authenticatedApi.put(`/categories/${categoryFormData.id}`, payload);
+          setCategories(categories.map(c => c.id === categoryFormData.id ? res.data : c));
+          setSuccess('Category updated successfully!');
+          setTimeout(() => setShowModal(false), 500);
         }
       } catch (err) {
         console.error('Error with category:', err);
-        setError('Error: ' + (err.message || 'Unknown error occurred'));
+        setError(err.response?.data?.message || 'Failed to save category');
       }
     }
   };
@@ -478,7 +345,7 @@ export default function AdminDashboard() {
 
   const filteredProducts = products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
   const filteredUsers = users.filter(u => (u.fullName || u.username) && (u.fullName || u.username).toLowerCase().includes(searchTerm.toLowerCase()));
-  const filteredOrders = orders.filter(o => ( o.fullName || o.phone || o.id?.toString() || '').toLowerCase().includes(searchTerm.toLowerCase()));
+  const filteredOrders = orders.filter(o => (o.fullName || o.phone || o.id?.toString() || '').toLowerCase().includes(searchTerm.toLowerCase()));
 
   if (!authorized || loading) {
     return (
@@ -1033,16 +900,17 @@ export default function AdminDashboard() {
                     </select>
                   </div>
                   <div className="form-group">
-                 <label className="form-label">Full Name</label>
-                 <input className="form-control" value={orderFormData.fullName} onChange={(e) => setOrderFormData({ ...orderFormData, fullName: e.target.value })}/>
+                    <label className="form-label">Full Name</label>
+                    <input className="form-control" value={orderFormData.fullName} onChange={(e) => setOrderFormData({ ...orderFormData, fullName: e.target.value })}/>
                   </div>
-                <div className="form-group">
-               <label className="form-label">Phone</label> 
-               <input className="form-control" value={orderFormData.phone} onChange={(e) =>  setOrderFormData({ ...orderFormData, phone: e.target.value })} />
-               </div>
-              <div className="form-group"> <label className="form-label">Address</label>
-              <textarea className="form-control" value={orderFormData.address} onChange={(e) => setOrderFormData({ ...orderFormData, address: e.target.value }) }/>
-              </div>
+                  <div className="form-group">
+                    <label className="form-label">Phone</label> 
+                    <input className="form-control" value={orderFormData.phone} onChange={(e) =>  setOrderFormData({ ...orderFormData, phone: e.target.value })} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Address</label>
+                    <textarea className="form-control" value={orderFormData.address} onChange={(e) => setOrderFormData({ ...orderFormData, address: e.target.value }) }/>
+                  </div>
                 </>
               )}
             </div>

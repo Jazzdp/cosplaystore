@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-
+import api from './path/to/axios/config';
+import authenticatedApi  from '../Util/AxiosConfig';
 export default function AccountSettings() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -19,7 +20,7 @@ export default function AccountSettings() {
         return;
       }
       try {
-        const res = await fetch('http://localhost:8080/api/auth/me', { headers: { Authorization: `Bearer ${token}` } });
+        const res = await authenticatedApi.get('/api/auth/me');
         if (!res.ok) throw new Error('Failed to load profile');
         const data = await res.json();
         setProfile({ email: data.email || '', fullName: data.fullName || '', phone: data.phone || '' });
@@ -42,7 +43,7 @@ export default function AccountSettings() {
       return;
     }
     try {
-      const res = await fetch('http://localhost:8080/api/auth/me', {
+      const res = await authenticatedApi.put('/api/auth/me', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(profile)

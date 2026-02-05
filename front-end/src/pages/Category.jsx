@@ -3,7 +3,8 @@ import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, Search, Heart, ShoppingCart } from "lucide-react";
 import '../styles/category.css';
 import ItemCard from "../components/itemcard";
-
+import authenticatedApi from "../Util/AxiosConfig";
+import api from "../Util/AxiosConfig";
 const Category = () => {
   const { category } = useParams();
   const [products, setProducts] = useState([]);
@@ -17,7 +18,7 @@ const Category = () => {
     setError(null);
     
     // Fetch all products and filter by category name
-    fetch(`http://localhost:8080/products`)
+    api.get('/api/products')
       .then(res => {
         if (!res.ok) {
           throw new Error(`Failed to fetch products: ${res.status}`);
