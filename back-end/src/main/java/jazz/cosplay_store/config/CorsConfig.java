@@ -32,6 +32,7 @@ public class CorsConfig implements WebMvcConfigurer {
         configuration.addAllowedOrigin("http://127.0.0.1:3000");
         configuration.addAllowedOrigin("http://localhost:5173");
         configuration.addAllowedOrigin(frontendUrl);
+        configuration.addAllowedOrigin("https://*.vercel.app");
         configuration.addAllowedHeader("*");
         configuration.addAllowedMethod("*");
         
