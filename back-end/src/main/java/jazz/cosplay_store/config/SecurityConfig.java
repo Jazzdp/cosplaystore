@@ -55,6 +55,7 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
             // Public endpoints
             .requestMatchers("/api/auth/**").permitAll()
             .requestMatchers("/products/**").permitAll()
+            .requestMatchers("/api/products/**").permitAll()
             .requestMatchers("/api/categories/**").permitAll()
             .requestMatchers("/", "/status", "/index.html").permitAll()
             // Static assets (frontend build files) - simplified to avoid complex patterns
