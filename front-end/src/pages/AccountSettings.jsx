@@ -19,7 +19,7 @@ export default function AccountSettings() {
         return;
       }
       try {
-        const { data } = await authenticatedApi.get('/auth/me');
+        const { data } = await authenticatedApi.get('/api/auth/me');
         setProfile({ email: data.email || '', fullName: data.fullName || '', phone: data.phone || '' });
         
       } catch (err) {
@@ -40,7 +40,7 @@ export default function AccountSettings() {
       return;
     }
     try {
-      const { data: updated } = await authenticatedApi.put('/auth/me', profile);
+      const { data: updated } = await authenticatedApi.put('/api/auth/me', profile);
       // Update localstorage user object
       const user = JSON.parse(localStorage.getItem('user') || '{}');
       localStorage.setItem('user', JSON.stringify({ ...user, email: updated.email, fullName: updated.fullName, phone: updated.phone }));
