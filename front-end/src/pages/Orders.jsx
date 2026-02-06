@@ -16,7 +16,7 @@ export default function OrdersPage() {
     const load = async () => {
       try {
         // Use /api/orders/me for authenticated users to fetch only their own orders
-        const { data } = await authenticatedApi.get('/orders/me');
+        const { data } = await authenticatedApi.get('/api/orders/me');
         if (!mounted) return;
         setOrders(Array.isArray(data) ? data : []);
       } catch (err) {
