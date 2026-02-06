@@ -3,7 +3,7 @@ import { useCart } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ShoppingCart, Trash2, Plus, Minus } from 'lucide-react';
 import '../styles/cart.css';
-import api from './path/to/axios/config';
+import api from '../Util/AxiosConfig';
 // API service to fetch product details
 const productAPI = {
   getProductById: async (id) => {
