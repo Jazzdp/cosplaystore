@@ -92,9 +92,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // Skip JWT filtering for public endpoints
         boolean shouldSkip = path.startsWith("/api/auth") 
             || path.startsWith("/auth")
-            || path.startsWith("/api/products")  // ✅ FIXED: Added this!
+            || (path.startsWith("/api/products") && method.equals("GET"))
             || path.startsWith("/products") 
-            || path.startsWith("/api/categories") 
+            || (path.startsWith("/api/categories") && method.equals("GET"))
             || path.startsWith("/categories")
             || path.equals("/") 
             || path.equals("/status")
