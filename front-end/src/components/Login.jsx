@@ -16,15 +16,8 @@ function Login() {
     setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:8080/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
+      const { data } = await api.post('/api/auth/login', { username, password });
+      if (data) {
         if (data.token) localStorage.setItem('jwt', data.token);
         const userObj = { username: data.username || username };
         if (data.id) userObj.id = data.id;
@@ -33,12 +26,10 @@ function Login() {
         localStorage.setItem('user', JSON.stringify(userObj));
 
         navigate('/');
-      } else {
-        setError(data.error || "Invalid username or password");
       }
     } catch (err) {
       console.error('Login error:', err);
-      setError("Login failed. Please try again.");
+      setError(err.response?.data?.error || "Login failed. Please try again.");
     } finally {
       setLoading(false);
     }

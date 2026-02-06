@@ -3,7 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, Search, Heart, ShoppingCart } from "lucide-react";
 import '../styles/category.css';
 import ItemCard from "../components/itemcard";
-import api from './path/to/axios/config';
+import api from '../Util/AxiosConfig';
 
 
 const Allproducts = ({ showToast }) => {
@@ -25,13 +25,7 @@ const Allproducts = ({ showToast }) => {
       setError(null);
       
       try {
-        const response = await api.get("/products");
-        
-        if (!response.ok) {
-          throw new Error(`Failed to fetch products: ${response.status} ${response.statusText}`);
-        }
-        
-        const data = await response.json();
+        const { data } = await api.get("/products");
         
         // Only update state if component is still mounted
         if (isMountedRef.current) {
@@ -43,7 +37,7 @@ const Allproducts = ({ showToast }) => {
         
         // Only update state if component is still mounted
         if (isMountedRef.current) {
-          setError(err.message || "Failed to load products");
+        setError(err.message || "Failed to load products");
           setIsLoading(false);
         }
       }

@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import ItemCard from './itemcard';
+import api from '../Util/AxiosConfig';
 
 export default function SearchOverlay({ isOpen, onClose, initialQuery = '', onQueryChange = () => {} }) {
   const [query, setQuery] = useState(initialQuery);
@@ -21,8 +22,7 @@ export default function SearchOverlay({ isOpen, onClose, initialQuery = '', onQu
       setLoading(true);
       try {
         if (!allProducts) {
-          const res = await fetch('http://localhost:8080/products');
-          const data = await res.json();
+          const { data } = await api.get('/products');
           if (cancelled) return;
           setAllProducts(Array.isArray(data) ? data : []);
           setResults(filterProducts(data, query));

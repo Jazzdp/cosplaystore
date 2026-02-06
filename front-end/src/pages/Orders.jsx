@@ -1,19 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ShoppingCart } from 'lucide-react';
-import authenticatedApi from '../Util/AxiosConfig';
-import api from '../Util/AxiosConfig';
+import { authenticatedApi } from '../Util/AxiosConfig';
 
 export default function OrdersPage() {
   const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  const fetchWithAuth = (url) => {
-    const jwt = localStorage.getItem('jwt');
-    return fetch(url, { headers: jwt ? { Authorization: `Bearer ${jwt}` } : {} });
-  };
 
   useEffect(() => {
     let mounted = true;
@@ -22,9 +16,7 @@ export default function OrdersPage() {
     const load = async () => {
       try {
         // Use /api/orders/me for authenticated users to fetch only their own orders
-        const res = await authenticatedApi.get('/api/orders/me');
-        if (!res.ok) throw new Error(`Failed to load orders (${res.status})`);
-        const data = await res.json();
+        const { data } = await authenticatedApi.get('/api/orders/me');
         if (!mounted) return;
         setOrders(Array.isArray(data) ? data : []);
       } catch (err) {

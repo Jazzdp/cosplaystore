@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import { ShoppingBag, Sparkles, ArrowRight } from "lucide-react";
 import '../styles/home.css';
 import api from "../Util/AxiosConfig";
-import authenticatedApi from "../Util/AxiosConfig";
 
 const Home = () => {
   const [categories, setCategories] = useState([]);
@@ -11,7 +10,7 @@ const Home = () => {
 
   useEffect(() => {
     api.get("/categories")
-      .then(res => res.json())
+      .then(res => res.data)
       .then(data => {
         console.log("Categories received:", data);
         setCategories(Array.isArray(data) ? data : []);

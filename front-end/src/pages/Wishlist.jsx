@@ -2,8 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Heart } from 'lucide-react';
 import '../styles/itemcard.css';
-import api from '../Util/AxiosConfig';
-import authenticatedApi from '../Util/AxiosConfig';
+import { authenticatedApi } from '../Util/AxiosConfig';
 // Wishlist Card Component
 function WishlistCard({ product, onRemove, navigate, styles }) {
   const [isHovered, setIsHovered] = useState(false);
@@ -72,20 +71,13 @@ export default function WishlistPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const fetchWithAuth = (url) => {
-    const jwt = localStorage.getItem('jwt');
-    return fetch(url, { headers: jwt ? { Authorization: `Bearer ${jwt}` } : {} });
-  };
-
   useEffect(() => {
     let mounted = true;
     setLoading(true);
     setError(null);
     const load = async () => {
       try {
-        const res = await authenticatedApi.get('/api/wishlist/me');
-        if (!res.ok) throw new Error(`Failed to load wishlist (${res.status})`);
-        const data = await res.json();
+        const { data } = await authenticatedApi.get('/api/wishlist/me');
         if (!mounted) return;
         setItems(Array.isArray(data) ? data : []);
       } catch (err) {
@@ -103,16 +95,10 @@ export default function WishlistPage() {
     try {
       const jwt = localStorage.getItem('jwt');
       console.debug('Wishlist remove, jwt present:', !!jwt, 'productId:', productId);
-      const res = await authenticatedApi.post(`/api/wishlist/toggle/${productId}`);
-      console.debug('Wishlist toggle response status:', res.status);
-      if (res.ok) {
-        const body = await res.json().catch(() => ({}));
-        if (body.status === 'removed') setItems(items.filter(item => item.id !== productId));
-        else if (body.status === 'added') setItems([...items, body.product].filter(Boolean));
-        else setItems(items.filter(item => item.id !== productId));
-      } else {
-        alert('Failed to remove from wishlist');
-      }
+      const { data } = await authenticatedApi.post(`/api/wishlist/toggle/${productId}`);
+      if (data && data.status === 'removed') setItems(items.filter(item => item.id !== productId));
+      else if (data && data.status === 'added') setItems([...items, data.product].filter(Boolean));
+      else setItems(items.filter(item => item.id !== productId));
     } catch (err) {
       console.error('Remove error', err);
       alert('Failed to remove from wishlist');

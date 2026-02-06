@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { useCart } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
-import authenticatedApi from '../Util/AxiosConfig';
-import api from '../Util/AxiosConfig';
+import { authenticatedApi } from '../Util/AxiosConfig';
 function Checkout() {
   const { cartItems, getCartTotal, clearCart } = useCart();
   const navigate = useNavigate();
@@ -30,7 +29,6 @@ function Checkout() {
 
     setSubmitting(true);
     try {
-      const token = localStorage.getItem('jwt');
       const userDataRaw = localStorage.getItem('user');
       let userId = null;
 
@@ -59,21 +57,7 @@ function Checkout() {
 
         console.log('Sending order payload:', payload);
 
-        const headers = { 'Content-Type': 'application/json' };
-        if (token) {
-          headers['Authorization'] = `Bearer ${token}`;
-        }
-
-        const res = await authenticatedApi.post('/api/orders', {
-          body: JSON.stringify(payload),
-          headers
-        });
-
-        if (!res.ok) {
-          const txt = await res.text();
-          console.error('Order creation failed:', txt);
-          throw new Error(`Failed to create order: ${res.status}`);
-        }
+        await authenticatedApi.post('/api/orders', payload);
       }
 
       clearCart();

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import authenticatedApi from '../Util/AxiosConfig';
+import { authenticatedApi } from '../Util/AxiosConfig';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();

@@ -9,8 +9,7 @@ const productAPI = {
   getProductById: async (id) => {
     try {
       const response = await api.get(`/products/${id}`);
-      if (!response.ok) throw new Error('Product not found');
-      return await response.json();
+      return response.data;
     } catch (error) {
       console.error('Error fetching product:', error);
       return null;

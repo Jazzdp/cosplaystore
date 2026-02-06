@@ -3,8 +3,7 @@ import { useCart } from '../context/CartContext';
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, Heart, ShoppingCart, Share2, Star, Truck, Shield, RotateCcw } from "lucide-react";
 import '../styles/productdetail.css';
-import authenticatedApi from "../Util/AxiosConfig";
-import api from "../Util/AxiosConfig";
+import api, { authenticatedApi } from "../Util/AxiosConfig";
 // Helper function to calculate total stock from sizes
 const getTotalStock = (sizes) => {
   if (!sizes || !Array.isArray(sizes)) return 0;
@@ -29,10 +28,7 @@ export default function ProductDetail() {
     setIsLoading(true);
     api.get(`/products/${id}`)
       .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch product");
-        return res.json();
-      })
-      .then((data) => {
+        const data = res.data;
         setProduct(data);
         // Auto-select first size if available
         if (data.sizes && data.sizes.length > 0) {
@@ -52,12 +48,9 @@ export default function ProductDetail() {
     const token = localStorage.getItem('jwt');
     if (!token || !id) return;
     try {
-      api.get(`/api/wishlist/check/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-        .then(res => res.ok ? res.text() : null)
-        .then(text => {
-          if (text !== null) setIsLiked(text === 'true');
+      authenticatedApi.get(`/api/wishlist/check/${id}`)
+        .then(res => {
+          setIsLiked(String(res.data) === 'true');
         })
         .catch(err => console.error('Error checking wishlist:', err));
     } catch (err) {
@@ -622,16 +615,10 @@ export default function ProductDetail() {
                     try {
                       if (isLiked) {
                         // Remove from wishlist
-                        await fetch(`http://localhost:8080/api/wishlist/remove/${id}`, {
-                          method: 'DELETE',
-                          headers: { Authorization: `Bearer ${token}` }
-                        });
+                        await authenticatedApi.delete(`/api/wishlist/remove/${id}`);
                       } else {
                         // Add to wishlist
-                        await fetch(`http://localhost:8080/api/wishlist/add/${id}`, {
-                          method: 'POST',
-                          headers: { Authorization: `Bearer ${token}` }
-                        });
+                        await authenticatedApi.post(`/api/wishlist/add/${id}`);
                       }
                       setIsLiked(!isLiked);
                     } catch (err) {

@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 @Component
 public class JwtUtil {
 
-@Value("${JWT_SECRET_KEY}")
+@Value("${security.jwt.secret-key}")
 private String secretKeyString; 
 
     private final SecretKey secretKey = Keys.hmacShaKeyFor(secretKeyString.getBytes());

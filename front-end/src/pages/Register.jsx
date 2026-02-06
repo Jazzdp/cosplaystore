@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { UserPlus } from 'lucide-react';
 import api from '../Util/AxiosConfig';
-import authenticatedApi from '../Util/AxiosConfig';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -30,21 +29,11 @@ const Register = () => {
     setError('');
 
     try {
-      const response = await api.post('/api/auth/register', {
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        navigate('/login');
-      } else {
-        setError(data.error || 'Registration failed');
-      }
+      await api.post('/api/auth/register', formData);
+      navigate('/login');
     } catch (error) {
       console.error('Registration error:', error);
-      setError('Network error. Please try again.');
+      setError(error.response?.data?.error || 'Network error. Please try again.');
     } finally {
       setLoading(false);
     }

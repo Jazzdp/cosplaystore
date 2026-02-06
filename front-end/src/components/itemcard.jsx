@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Heart, ShoppingCart, Eye } from "lucide-react";
 import '../styles/itemcard.css';
 import { useCart } from '../context/CartContext';
+import { authenticatedApi } from '../Util/AxiosConfig';
 
 
 export default function ItemCard({ product, showToast }) {
@@ -195,14 +196,8 @@ export default function ItemCard({ product, showToast }) {
       const token = localStorage.getItem('jwt');
       if (!token) return;
       try {
-        const res = await fetch(`http://localhost:8080/api/wishlist/check/${product.id}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        if (res.ok) {
-          const text = await res.text();
-          const isInWishlist = text === 'true';
-          setIsLiked(isInWishlist);
-        }
+        const { data } = await authenticatedApi.get(`/api/wishlist/check/${product.id}`);
+        setIsLiked(String(data) === 'true');
       } catch (err) {
         console.error('Error checking wishlist:', err);
       }
@@ -311,18 +306,10 @@ export default function ItemCard({ product, showToast }) {
               setLoadingWishlist(true);
               try {
                 // Use toggle endpoint to avoid DELETE/CORS issues
-                const res = await fetch(`http://localhost:8080/api/wishlist/toggle/${product.id}`, {
-                  method: 'POST',
-                  headers: { Authorization: `Bearer ${token}` }
-                });
-                if (res.ok) {
-                  const body = await res.json().catch(() => ({}));
-                  if (body.status === 'removed') setIsLiked(false);
-                  else if (body.status === 'added') setIsLiked(true);
-                  else setIsLiked(!isLiked);
-                } else {
-                  console.warn('Wishlist toggle failed', res.status);
-                }
+                const { data } = await authenticatedApi.post(`/api/wishlist/toggle/${product.id}`);
+                if (data && data.status === 'removed') setIsLiked(false);
+                else if (data && data.status === 'added') setIsLiked(true);
+                else setIsLiked(!isLiked);
               } catch (err) {
                 console.error('Error updating wishlist:', err);
               } finally {

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SearchOverlay from './SearchOverlay';
+import { authenticatedApi } from '../Util/AxiosConfig';
 
 const Header = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -24,9 +25,7 @@ const Header = () => {
     // Helper to fetch /api/auth/me and return parsed user object or null
     const fetchMe = async () => {
       try {
-        const res = await fetch('http://localhost:8080/api/auth/me', { headers: { Authorization: `Bearer ${token}` } });
-        if (!res.ok) return null;
-  const me = await res.json();
+        const { data: me } = await authenticatedApi.get('/api/auth/me');
         return { id: me.id, username: me.username, role: me.role, email: me.email };
       } catch (err) {
         console.error('Failed to fetch /me', err);
@@ -85,9 +84,7 @@ const Header = () => {
     const token = localStorage.getItem('jwt');
     if (!token) return;
     try {
-      const res = await fetch('http://localhost:8080/api/auth/me', { headers: { Authorization: `Bearer ${token}` } });
-      if (!res.ok) return;
-  const me = await res.json();
+      const { data: me } = await authenticatedApi.get('/api/auth/me');
       const u = { id: me.id, username: me.username, role: me.role, email: me.email };
       localStorage.setItem('user', JSON.stringify(u));
       setUser(u);
