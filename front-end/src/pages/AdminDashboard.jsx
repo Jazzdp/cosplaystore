@@ -46,7 +46,7 @@ export default function AdminDashboard() {
     }
 
     try {
-      const res = await authenticatedApi.get('/admin/verify');
+      const res = await authenticatedApi.get('/api/admin/verify');
       if (res.data && res.data.authorized) {
         setAuthorized(true);
         return true;
@@ -63,9 +63,9 @@ export default function AdminDashboard() {
   const loadData = async () => {
     try {
       const [pRes, uRes, oRes, cRes] = await Promise.all([
-        authenticatedApi.get('/products'),
-        authenticatedApi.get('/users'),
-        authenticatedApi.get('/orders'),
+        authenticatedApi.get('/api/products'),
+        authenticatedApi.get('/api/users'),
+        authenticatedApi.get('/api/orders'),
         authenticatedApi.get('/api/categories')
       ]);
 
@@ -93,7 +93,7 @@ export default function AdminDashboard() {
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure?')) return;
     try {
-      await authenticatedApi.delete(`/products/${id}`);
+      await authenticatedApi.delete(`/api/products/${id}`);
       setProducts(products.filter(p => p.id !== id));
       setSuccess('Product deleted successfully!');
     } catch (err) {
@@ -105,7 +105,7 @@ export default function AdminDashboard() {
   const handleDeleteOrder = async (id) => {
     if (!window.confirm('Are you sure you want to delete this order?')) return;
     try {
-      await authenticatedApi.delete(`/orders/${id}`);
+      await authenticatedApi.delete(`/api/orders/${id}`);
       setOrders(orders.filter(o => o.id !== id));
       setSuccess('Order deleted successfully!');
     } catch (err) {
@@ -117,7 +117,7 @@ export default function AdminDashboard() {
   const handleDeleteUser = async (id) => {
     if (!window.confirm('Are you sure you want to delete this user?')) return;
     try {
-      await authenticatedApi.delete(`/users/${id}`);
+      await authenticatedApi.delete(`/api/users/${id}`);
       setUsers(users.filter(u => u.id !== id));
       setSuccess('User deleted successfully!');
     } catch (err) {
@@ -238,12 +238,12 @@ export default function AdminDashboard() {
 
       try {
         if (modalMode === 'add') {
-          const res = await authenticatedApi.post('/products', payload);
+          const res = await authenticatedApi.post('/api/products', payload);
           setProducts([res.data, ...products]);
           setSuccess('Product added successfully!');
           setTimeout(() => setShowModal(false), 500);
         } else {
-          const res = await authenticatedApi.put(`/products/${formData.id}`, payload);
+          const res = await authenticatedApi.put(`/api/products/${formData.id}`, payload);
           setProducts(products.map(p => p.id === formData.id ? res.data : p));
           setSuccess('Product updated successfully!');
           setTimeout(() => setShowModal(false), 500);
@@ -269,12 +269,12 @@ export default function AdminDashboard() {
           if (!window.confirm('Cancelling this order will restore the stock. Continue?')) {
             return;
           }
-          await authenticatedApi.delete(`/orders/${orderFormData.id}`);
+          await authenticatedApi.delete(`/api/orders/${orderFormData.id}`);
           setOrders(orders.filter(o => o.id !== orderFormData.id));
           setSuccess('Order cancelled successfully!');
           setShowModal(false);
         } else {
-          const res = await authenticatedApi.put(`/orders/${orderFormData.id}`, payload);
+          const res = await authenticatedApi.put(`/api/orders/${orderFormData.id}`, payload);
           setOrders(orders.map(o => o.id === orderFormData.id ? res.data : o));
           setSuccess('Order updated successfully!');
           setShowModal(false);
@@ -295,7 +295,7 @@ export default function AdminDashboard() {
       };
 
       try {
-        const res = await authenticatedApi.put(`/users/${userFormData.id}`, payload);
+        const res = await authenticatedApi.put(`/api/users/${userFormData.id}`, payload);
         setUsers(users.map(u => u.id === userFormData.id ? res.data : u));
         setSuccess('User updated successfully!');
         setTimeout(() => setShowModal(false), 500);
