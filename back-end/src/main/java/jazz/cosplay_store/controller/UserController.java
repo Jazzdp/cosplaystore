@@ -23,6 +23,20 @@ public class UserController {
         this.userRepository = userRepository;
     }
 
+    private static String normalizeRole(String role) {
+        if (role == null) {
+            return null;
+        }
+        String trimmed = role.trim();
+        if (trimmed.isEmpty()) {
+            return trimmed;
+        }
+        if (trimmed.startsWith("ROLE_")) {
+            return trimmed;
+        }
+        return "ROLE_" + trimmed;
+    }
+
     // GET all users
     @GetMapping
     public List<UserResponseDTO> getAllUsers() {
@@ -83,7 +97,7 @@ public class UserController {
         User user = new User();
         user.setUsername(userDTO.getUsername());
         user.setPassword(userDTO.getPassword()); // later: hash it 🔒
-        user.setRole(userDTO.getRole());
+        user.setRole(normalizeRole(userDTO.getRole()));
         user.setEmail(userDTO.getEmail());
         user.setFullName(userDTO.getFullName());
         if (userDTO.getPhone() != null) {
@@ -120,7 +134,7 @@ public class UserController {
                         existing.setPassword(userDTO.getPassword());
                     }
                     if (userDTO.getRole() != null && !userDTO.getRole().trim().isEmpty()) {
-                        existing.setRole(userDTO.getRole());
+                        existing.setRole(normalizeRole(userDTO.getRole()));
                     }
                     if (userDTO.getEmail() != null && !userDTO.getEmail().trim().isEmpty()) {
                         existing.setEmail(userDTO.getEmail());

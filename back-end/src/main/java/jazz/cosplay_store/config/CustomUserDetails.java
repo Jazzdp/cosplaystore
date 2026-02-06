@@ -18,8 +18,15 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // make sure role is prefixed with ROLE_
-        return List.of(new SimpleGrantedAuthority(user.getRole()));
+        // ensure ROLE_ prefix for Spring Security hasRole checks
+        String role = user.getRole();
+        if (role == null || role.isBlank()) {
+            return List.of();
+        }
+        if (!role.startsWith("ROLE_")) {
+            role = "ROLE_" + role;
+        }
+        return List.of(new SimpleGrantedAuthority(role));
     }
 
     @Override
