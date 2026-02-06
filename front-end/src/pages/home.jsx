@@ -9,7 +9,7 @@ const Home = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    api.get("/categories")
+    api.get("/api/categories")
       .then(res => res.data)
       .then(data => {
         console.log("Categories received:", data);

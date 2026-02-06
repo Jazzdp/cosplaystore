@@ -66,7 +66,7 @@ export default function AdminDashboard() {
         authenticatedApi.get('/products'),
         authenticatedApi.get('/users'),
         authenticatedApi.get('/orders'),
-        authenticatedApi.get('/categories')
+        authenticatedApi.get('/api/categories')
       ]);
 
       setProducts(Array.isArray(pRes.data) ? pRes.data : []);
@@ -147,7 +147,7 @@ export default function AdminDashboard() {
   const handleDeleteCategory = async (id) => {
     if (!window.confirm('Are you sure you want to delete this category?')) return;
     try {
-      await authenticatedApi.delete(`/categories/${id}`);
+      await authenticatedApi.delete(`/api/categories/${id}`);
       setCategories(categories.filter(c => c.id !== id));
       setSuccess('Category deleted successfully!');
     } catch (err) {
@@ -321,12 +321,12 @@ export default function AdminDashboard() {
 
       try {
         if (modalMode === 'add') {
-          const res = await authenticatedApi.post('/categories', payload);
+          const res = await authenticatedApi.post('/api/categories', payload);
           setCategories([...categories, res.data]);
           setSuccess('Category added successfully!');
           setTimeout(() => setShowModal(false), 500);
         } else {
-          const res = await authenticatedApi.put(`/categories/${categoryFormData.id}`, payload);
+          const res = await authenticatedApi.put(`/api/categories/${categoryFormData.id}`, payload);
           setCategories(categories.map(c => c.id === categoryFormData.id ? res.data : c));
           setSuccess('Category updated successfully!');
           setTimeout(() => setShowModal(false), 500);

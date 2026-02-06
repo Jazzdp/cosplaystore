@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/products")
+@RequestMapping({"/products", "/api/products"})
 
 public class ProductController {
 
@@ -248,4 +248,3 @@ public class ProductController {
                 .orElse(ResponseEntity.notFound().build());
     }
 }
-
