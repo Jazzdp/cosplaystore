@@ -21,10 +21,10 @@ import org.slf4j.LoggerFactory;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
-
+import jazz.cosplay_store.config.CorsConfig;
 @RestController
 @RequestMapping("/api/orders")
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5173"}, allowCredentials = "true")
+
 public class OrderController {
 
     private static final Logger logger = LoggerFactory.getLogger(OrderController.class);

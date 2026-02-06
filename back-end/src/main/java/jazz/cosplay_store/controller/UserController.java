@@ -11,10 +11,10 @@ import jazz.cosplay_store.exception.GlobalExceptionHandler.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
+import jazz.cosplay_store.config.CorsConfig;
 @RestController
 @RequestMapping("/api/users")
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5173"}, allowCredentials = "true")
+
 public class UserController {
 
     private final UserRepository userRepository;

@@ -6,7 +6,7 @@ const api = axios.create({
 });
 // Create a separate instance for authenticated requests
 export const authenticatedApi = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: import.meta.env.VITE_API_BASE_URL ,
 });
 
 

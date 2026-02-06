@@ -6,7 +6,7 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
-
+import org.springframework.beans.factory.annotation.Value;
 import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.function.Function;
@@ -15,7 +15,10 @@ import java.util.stream.Collectors;
 @Component
 public class JwtUtil {
 
-    private final SecretKey secretKey = Keys.hmacShaKeyFor("3cfa76ef14937c1c0ea519f8fc057a80fcd04a7420f8e8bcd0a7567c272e007b".getBytes());
+@Value("${JWT_SECRET_KEY}")
+private String secretKeyString; 
+
+    private final SecretKey secretKey = Keys.hmacShaKeyFor(secretKeyString.getBytes());
     private final long expiration = 1000 * 60 * 60 * 90; // 90 hours
 
     // Extract username from token

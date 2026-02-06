@@ -22,18 +22,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import jazz.cosplay_store.service.UserService.*;
 import jazz.cosplay_store.model.User;
 import jazz.cosplay_store.repository.UserRepository;
-
-
-
-    
-
-
+import jazz.cosplay_store.config.CorsConfig;
 import java.util.Map;
 
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:3000"}, allowedHeaders = "*", exposedHeaders = "*")
+
 public class AuthController {
 private final UserRepository userRepository;
 private final PasswordEncoder passwordEncoder;

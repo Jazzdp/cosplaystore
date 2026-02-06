@@ -18,10 +18,10 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
+import jazz.cosplay_store.config.CorsConfig;
 @RestController
 @RequestMapping("/api/wishlist")
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5173"}, allowCredentials = "true")
+
 public class WishlistController {
 
     private static final Logger logger = LoggerFactory.getLogger(WishlistController.class);

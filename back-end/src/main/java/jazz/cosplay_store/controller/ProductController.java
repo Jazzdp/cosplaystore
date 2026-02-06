@@ -15,13 +15,13 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import java.util.Objects;
-
+import jazz.cosplay_store.config.CorsConfig;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/products")
-@CrossOrigin(origins = "http://localhost:3000")
+
 public class ProductController {
 
     private final ProductRepository productRepository;
