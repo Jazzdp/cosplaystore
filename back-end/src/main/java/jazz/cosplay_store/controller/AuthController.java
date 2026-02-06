@@ -63,14 +63,14 @@ private final PasswordEncoder passwordEncoder;
                 return ResponseEntity.status(404).body(Map.of("error", "User not found"));
             }
                 User u = found.get();
-                return ResponseEntity.ok(Map.of(
-                    "id", u.getId(),
-                    "username", u.getUsername(),
-                    "role", u.getRole(),
-                    "email", u.getEmail(),
-                    "phone", u.getPhone(),
-                    "fullName", u.getFullName()
-                ));
+                Map<String, Object> payload = new HashMap<>();
+                payload.put("id", u.getId());
+                payload.put("username", u.getUsername());
+                payload.put("role", u.getRole());
+                payload.put("email", u.getEmail());
+                payload.put("phone", u.getPhone());
+                payload.put("fullName", u.getFullName());
+                return ResponseEntity.ok(payload);
         } catch (Exception e) {
             return ResponseEntity.status(401).body(Map.of("error", "Invalid token or session", "message", e.getMessage()));
         }
