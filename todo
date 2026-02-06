@@ -1,0 +1,3 @@
+fix axios config 
+fix fetch local host in ALL pages (front-end)
+fix any CORS issues (back-end)
