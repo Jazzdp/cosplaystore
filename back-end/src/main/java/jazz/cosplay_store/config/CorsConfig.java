@@ -9,16 +9,32 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Configuration
 public class CorsConfig implements WebMvcConfigurer {
 
-      @Value("${app.frontend-url}") 
+    @Value("${app.frontend-url:}")
     private String frontendUrl;
+
+    private List<String> buildAllowedOrigins() {
+        List<String> origins = new ArrayList<>();
+        origins.add("http://localhost:3000");
+        origins.add("http://127.0.0.1:3000");
+        origins.add("http://localhost:5173");
+        if (frontendUrl != null && !frontendUrl.isBlank()) {
+            origins.add(frontendUrl);
+        }
+        return origins;
+    }
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
+        List<String> origins = buildAllowedOrigins();
         registry.addMapping("/**")
-                .allowedOrigins("http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:5173", frontendUrl,"https://*.vercel.app")
+                .allowedOrigins(origins.toArray(new String[0]))
+                .allowedOriginPatterns("https://*.vercel.app")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true);
@@ -26,13 +42,11 @@ public class CorsConfig implements WebMvcConfigurer {
 
      @Bean
     public CorsConfigurationSource corsConfigurationSource() {
+        List<String> origins = buildAllowedOrigins();
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowCredentials(true);
-        configuration.addAllowedOrigin("http://localhost:3000");
-        configuration.addAllowedOrigin("http://127.0.0.1:3000");
-        configuration.addAllowedOrigin("http://localhost:5173");
-        configuration.addAllowedOrigin(frontendUrl);
-        configuration.addAllowedOrigin("https://*.vercel.app");
+        configuration.setAllowedOrigins(origins);
+        configuration.addAllowedOriginPattern("https://*.vercel.app");
         configuration.addAllowedHeader("*");
         configuration.addAllowedMethod("*");
         
