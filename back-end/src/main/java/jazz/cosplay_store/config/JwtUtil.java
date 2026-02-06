@@ -11,15 +11,21 @@ import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.nio.charset.StandardCharsets;
 
 @Component
 public class JwtUtil {
 
-@Value("${security.jwt.secret-key}")
-private String secretKeyString; 
+    private final SecretKey secretKey;
+    private final long expiration;
 
-    private final SecretKey secretKey = Keys.hmacShaKeyFor(secretKeyString.getBytes());
-    private final long expiration = 1000 * 60 * 60 * 90; // 90 hours
+    public JwtUtil(
+            @Value("${security.jwt.secret-key}") String secretKeyString,
+            @Value("${security.jwt.expiration-time:324000000}") long expiration
+    ) {
+        this.secretKey = Keys.hmacShaKeyFor(secretKeyString.getBytes(StandardCharsets.UTF_8));
+        this.expiration = expiration;
+    }
 
     // Extract username from token
     public String extractUsername(String token) {
