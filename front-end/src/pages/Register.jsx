@@ -29,7 +29,7 @@ const Register = () => {
     setError('');
 
     try {
-      await api.post('/api/auth/register', formData);
+      await api.post('/auth/register', formData);
       navigate('/login');
     } catch (error) {
       console.error('Registration error:', error);

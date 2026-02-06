@@ -17,7 +17,7 @@ const Category = () => {
     setError(null);
     
     // Fetch all products and filter by category name
-    api.get('/api/products')
+    api.get('/products')
       .then(res => {
         const data = res.data;
         // Filter products by category name

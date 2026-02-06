@@ -306,7 +306,7 @@ export default function ItemCard({ product, showToast }) {
               setLoadingWishlist(true);
               try {
                 // Use toggle endpoint to avoid DELETE/CORS issues
-                const { data } = await authenticatedApi.post(`/api/wishlist/toggle/${product.id}`);
+                const { data } = await authenticatedApi.post(`/wishlist/toggle/${product.id}`);
                 if (data && data.status === 'removed') setIsLiked(false);
                 else if (data && data.status === 'added') setIsLiked(true);
                 else setIsLiked(!isLiked);

@@ -25,7 +25,7 @@ const Header = () => {
     // Helper to fetch /api/auth/me and return parsed user object or null
     const fetchMe = async () => {
       try {
-        const { data: me } = await authenticatedApi.get('/api/auth/me');
+        const { data: me } = await authenticatedApi.get('/auth/me');
         return { id: me.id, username: me.username, role: me.role, email: me.email };
       } catch (err) {
         console.error('Failed to fetch /me', err);
@@ -84,7 +84,7 @@ const Header = () => {
     const token = localStorage.getItem('jwt');
     if (!token) return;
     try {
-      const { data: me } = await authenticatedApi.get('/api/auth/me');
+      const { data: me } = await authenticatedApi.get('/auth/me');
       const u = { id: me.id, username: me.username, role: me.role, email: me.email };
       localStorage.setItem('user', JSON.stringify(u));
       setUser(u);

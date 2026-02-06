@@ -77,7 +77,7 @@ export default function WishlistPage() {
     setError(null);
     const load = async () => {
       try {
-        const { data } = await authenticatedApi.get('/api/wishlist/me');
+        const { data } = await authenticatedApi.get('/wishlist/me');
         if (!mounted) return;
         setItems(Array.isArray(data) ? data : []);
       } catch (err) {
@@ -95,7 +95,7 @@ export default function WishlistPage() {
     try {
       const jwt = localStorage.getItem('jwt');
       console.debug('Wishlist remove, jwt present:', !!jwt, 'productId:', productId);
-      const { data } = await authenticatedApi.post(`/api/wishlist/toggle/${productId}`);
+      const { data } = await authenticatedApi.post(`/wishlist/toggle/${productId}`);
       if (data && data.status === 'removed') setItems(items.filter(item => item.id !== productId));
       else if (data && data.status === 'added') setItems([...items, data.product].filter(Boolean));
       else setItems(items.filter(item => item.id !== productId));

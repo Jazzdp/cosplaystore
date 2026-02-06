@@ -16,7 +16,7 @@ function Login() {
     setLoading(true);
 
     try {
-      const { data } = await api.post('/api/auth/login', { username, password });
+      const { data } = await api.post('/auth/login', { username, password });
       if (data) {
         if (data.token) localStorage.setItem('jwt', data.token);
         const userObj = { username: data.username || username };

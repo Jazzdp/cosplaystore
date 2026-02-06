@@ -48,7 +48,7 @@ export default function ProductDetail() {
     const token = localStorage.getItem('jwt');
     if (!token || !id) return;
     try {
-      authenticatedApi.get(`/api/wishlist/check/${id}`)
+      authenticatedApi.get(`/wishlist/check/${id}`)
         .then(res => {
           setIsLiked(String(res.data) === 'true');
         })
@@ -615,10 +615,10 @@ export default function ProductDetail() {
                     try {
                       if (isLiked) {
                         // Remove from wishlist
-                        await authenticatedApi.delete(`/api/wishlist/remove/${id}`);
+                        await authenticatedApi.delete(`/wishlist/remove/${id}`);
                       } else {
                         // Add to wishlist
-                        await authenticatedApi.post(`/api/wishlist/add/${id}`);
+                        await authenticatedApi.post(`/wishlist/add/${id}`);
                       }
                       setIsLiked(!isLiked);
                     } catch (err) {
