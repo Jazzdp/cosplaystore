@@ -57,7 +57,7 @@ function Checkout() {
 
         console.log('Sending order payload:', payload);
 
-        await authenticatedApi.post('/orders', payload);
+        await authenticatedApi.post('/api/orders', payload);
       }
 
       clearCart();

@@ -6,9 +6,9 @@ public class UserResponseDTO {
     private String role;
     private String email;
     private String fullName;
-    private int phone;
+    private Integer phone;
 
-    public UserResponseDTO(Long id, String username, String role, String email, String fullName, int phone) {
+    public UserResponseDTO(Long id, String username, String role, String email, String fullName, Integer phone) {
         this.id = id;
         this.username = username;
         this.role = role;
@@ -37,7 +37,7 @@ public class UserResponseDTO {
     public String getFullName() {
         return fullName;
     }
-    public int getPhone() {
+    public Integer getPhone() {
         return phone;
     }
 }
